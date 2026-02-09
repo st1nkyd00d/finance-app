@@ -288,7 +288,7 @@ export default function Dashboard() {
       )}
 
       {/* Stats del mes (en USD) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5">
           <p className="text-sm text-gray-500 dark:text-gray-400">Ingresos del Mes <span className="text-xs">(USD)</span></p>
           <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">
@@ -299,6 +299,16 @@ export default function Dashboard() {
           <p className="text-sm text-gray-500 dark:text-gray-400">Gastos del Mes <span className="text-xs">(USD)</span></p>
           <p className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">
             -${formatAmount(monthStats.expense)}
+          </p>
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Balance del Mes <span className="text-xs">(USD)</span></p>
+          <p className={`text-2xl font-bold mt-1 ${
+            monthStats.income - monthStats.expense >= 0
+              ? 'text-green-600 dark:text-green-400'
+              : 'text-red-600 dark:text-red-400'
+          }`}>
+            {monthStats.income - monthStats.expense >= 0 ? '+' : ''}${formatAmount(monthStats.income - monthStats.expense)}
           </p>
         </div>
       </div>
