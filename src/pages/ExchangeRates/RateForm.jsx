@@ -1,18 +1,30 @@
 import { useState, useEffect } from 'react'
 import Modal from '../../components/ui/Modal'
-
-const CURRENCY_PAIRS = [
-  { from: 'USD', to: 'VES', label: 'USD / VES (BCV)' },
-  { from: 'USDT', to: 'VES', label: 'USDT / VES' },
-  { from: 'USD', to: 'USDT', label: 'USD / USDT' },
-]
+import { fetchCurrencies } from '../../services/currencies'
 
 export default function RateForm({ isOpen, onClose, onSave, defaultPair = null }) {
+  const [currencies, setCurrencies] = useState([])
   const [fromCurrency, setFromCurrency] = useState('USD')
   const [toCurrency, setToCurrency] = useState('VES')
   const [rate, setRate] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchCurrencies()
+        .then((data) => {
+          setCurrencies(data)
+          if (data.length > 0 && !fromCurrency) {
+            setFromCurrency(data[0].code)
+          }
+          if (data.length > 1 && !toCurrency) {
+            setToCurrency(data[1].code)
+          }
+        })
+        .catch(() => setCurrencies([]))
+    }
+  }, [isOpen])
 
   useEffect(() => {
     if (defaultPair) {
@@ -22,12 +34,6 @@ export default function RateForm({ isOpen, onClose, onSave, defaultPair = null }
     setRate('')
     setError('')
   }, [isOpen, defaultPair])
-
-  function handlePairChange(pairIndex) {
-    const pair = CURRENCY_PAIRS[pairIndex]
-    setFromCurrency(pair.from)
-    setToCurrency(pair.to)
-  }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -55,10 +61,6 @@ export default function RateForm({ isOpen, onClose, onSave, defaultPair = null }
     }
   }
 
-  const selectedIndex = CURRENCY_PAIRS.findIndex(
-    (p) => p.from === fromCurrency && p.to === toCurrency
-  )
-
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Actualizar Tasa de Cambio">
       {error && (
@@ -68,19 +70,40 @@ export default function RateForm({ isOpen, onClose, onSave, defaultPair = null }
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Par de monedas
-          </label>
-          <select
-            value={selectedIndex}
-            onChange={(e) => handlePairChange(parseInt(e.target.value))}
-            className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-          >
-            {CURRENCY_PAIRS.map((pair, i) => (
-              <option key={i} value={i}>{pair.label}</option>
-            ))}
-          </select>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              De
+            </label>
+            <select
+              value={fromCurrency}
+              onChange={(e) => setFromCurrency(e.target.value)}
+              className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            >
+              {currencies.map((currency) => (
+                <option key={currency.id} value={currency.code}>
+                  {currency.code} - {currency.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              A
+            </label>
+            <select
+              value={toCurrency}
+              onChange={(e) => setToCurrency(e.target.value)}
+              className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            >
+              {currencies.map((currency) => (
+                <option key={currency.id} value={currency.code}>
+                  {currency.code} - {currency.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div>

@@ -20,19 +20,23 @@ export default function useCurrencyConvert() {
       .finally(() => setLoading(false))
   }, [])
 
-  // Buscar tasa directa o inversa
+  // Buscar tasa usando normalización
   function getRate(from, to) {
     if (from === to) return 1
 
-    const direct = rates.find(
-      (r) => r.from_currency === from && r.to_currency === to
-    )
-    if (direct) return parseFloat(direct.rate)
+    // Normalizar búsqueda
+    const normalizedFrom = from <= to ? from : to
+    const normalizedTo = from <= to ? to : from
+    const invert = from > to
 
-    const inverse = rates.find(
-      (r) => r.from_currency === to && r.to_currency === from
+    const rate = rates.find(
+      (r) => r.normalized_from === normalizedFrom && r.normalized_to === normalizedTo
     )
-    if (inverse) return 1 / parseFloat(inverse.rate)
+
+    if (rate) {
+      const value = parseFloat(rate.rate)
+      return invert ? (1 / value) : value
+    }
 
     // Intentar conversion cruzada via USD
     if (from !== 'USD' && to !== 'USD') {

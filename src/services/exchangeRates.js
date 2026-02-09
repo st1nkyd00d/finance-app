@@ -30,25 +30,39 @@ export async function setRate({ from_currency, to_currency, rate, source = 'manu
     throw new Error('La tasa de cambio debe ser un número positivo')
   }
 
+  // Normalizar par (orden alfabético)
+  let normalizedFrom, normalizedTo, normalizedRate
+  if (from_currency <= to_currency) {
+    normalizedFrom = from_currency
+    normalizedTo = to_currency
+    normalizedRate = rate
+  } else {
+    normalizedFrom = to_currency
+    normalizedTo = from_currency
+    normalizedRate = 1 / rate
+  }
+
   const user = await getAuthenticatedUser()
 
-  // Marcar tasas anteriores del mismo par como no actuales
+  // Marcar tasas anteriores del mismo par normalizado como no actuales
   await supabase
     .from('exchange_rates')
     .update({ is_current: false })
     .eq('user_id', user.id)
-    .eq('from_currency', from_currency)
-    .eq('to_currency', to_currency)
+    .eq('normalized_from', normalizedFrom)
+    .eq('normalized_to', normalizedTo)
     .eq('is_current', true)
 
-  // Insertar nueva tasa
+  // Insertar nueva tasa normalizada
   const { data, error } = await supabase
     .from('exchange_rates')
     .insert({
       user_id: user.id,
-      from_currency,
-      to_currency,
-      rate,
+      from_currency: normalizedFrom,
+      to_currency: normalizedTo,
+      normalized_from: normalizedFrom,
+      normalized_to: normalizedTo,
+      rate: normalizedRate,
       source,
       is_current: true,
     })
@@ -91,18 +105,54 @@ export async function fetchBCVRate() {
   return data.rate
 }
 
+export async function fetchUSDTRate() {
+  // Usar Supabase Edge Function para obtener tasa USDT/USD
+  const { data, error } = await supabase.functions.invoke('usdt-rate')
+
+  if (error) {
+    throw new Error('No se pudo obtener tasa USDT/USD: ' + error.message)
+  }
+
+  if (data.error) {
+    throw new Error(data.error)
+  }
+
+  return data.rate
+}
+
 export async function getCurrentRate(fromCurrency, toCurrency) {
+  // Normalizar búsqueda
+  const normalizedFrom = fromCurrency <= toCurrency ? fromCurrency : toCurrency
+  const normalizedTo = fromCurrency <= toCurrency ? toCurrency : fromCurrency
+  const invert = fromCurrency > toCurrency
+
   const { data, error } = await supabase
     .from('exchange_rates')
-    .select('rate, source, created_at')
-    .eq('from_currency', fromCurrency)
-    .eq('to_currency', toCurrency)
+    .select('rate, source, created_at, from_currency, to_currency')
+    .eq('normalized_from', normalizedFrom)
+    .eq('normalized_to', normalizedTo)
     .eq('is_current', true)
     .order('created_at', { ascending: false })
     .limit(1)
     .single()
 
   if (error || !data) return null
-  return data
+
+  return {
+    ...data,
+    rate: invert ? (1 / parseFloat(data.rate)) : parseFloat(data.rate),
+  }
+}
+
+export async function deleteRate(rateId) {
+  const user = await getAuthenticatedUser()
+
+  const { error } = await supabase
+    .from('exchange_rates')
+    .delete()
+    .eq('id', rateId)
+    .eq('user_id', user.id)
+
+  if (error) throw error
 }
 
