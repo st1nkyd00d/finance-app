@@ -1,4 +1,5 @@
 import { useEffect, useRef, useId } from 'react'
+import { HiXMark } from 'react-icons/hi2'
 
 export default function Modal({ isOpen, onClose, title, children }) {
   const modalRef = useRef(null)
@@ -75,9 +76,7 @@ export default function Modal({ isOpen, onClose, title, children }) {
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
             aria-label="Cerrar"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <HiXMark className="w-5 h-5" />
           </button>
         </div>
         {children}

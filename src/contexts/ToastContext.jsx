@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useCallback } from 'react'
+import { HiCheckCircle, HiExclamationCircle, HiExclamationTriangle, HiInformationCircle, HiXMark } from 'react-icons/hi2'
 
 const ToastContext = createContext(null)
 
@@ -74,41 +75,25 @@ function Toast({ toast, onClose }) {
       bg: 'bg-green-50 dark:bg-green-900/50',
       border: 'border-green-200 dark:border-green-800',
       text: 'text-green-800 dark:text-green-200',
-      icon: (
-        <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
+      icon: <HiCheckCircle className="w-5 h-5 text-green-500" />,
     },
     error: {
       bg: 'bg-red-50 dark:bg-red-900/50',
       border: 'border-red-200 dark:border-red-800',
       text: 'text-red-800 dark:text-red-200',
-      icon: (
-        <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-        </svg>
-      ),
+      icon: <HiExclamationCircle className="w-5 h-5 text-red-500" />,
     },
     warning: {
       bg: 'bg-amber-50 dark:bg-amber-900/50',
       border: 'border-amber-200 dark:border-amber-800',
       text: 'text-amber-800 dark:text-amber-200',
-      icon: (
-        <svg className="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-        </svg>
-      ),
+      icon: <HiExclamationTriangle className="w-5 h-5 text-amber-500" />,
     },
     info: {
       bg: 'bg-indigo-50 dark:bg-indigo-900/50',
       border: 'border-indigo-200 dark:border-indigo-800',
       text: 'text-indigo-800 dark:text-indigo-200',
-      icon: (
-        <svg className="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-        </svg>
-      ),
+      icon: <HiInformationCircle className="w-5 h-5 text-indigo-500" />,
     },
   }
 
@@ -125,9 +110,7 @@ function Toast({ toast, onClose }) {
         onClick={onClose}
         className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
+        <HiXMark className="w-4 h-4" />
       </button>
     </div>
   )

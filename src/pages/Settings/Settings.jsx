@@ -13,6 +13,7 @@ import { fetchWallets } from '../../services/wallets'
 import { fetchCategories } from '../../services/categories'
 import { fetchTransactions } from '../../services/transactions'
 import ConfirmDialog from '../../components/ui/ConfirmDialog'
+import { HiSun, HiMoon, HiTableCells, HiDocumentText, HiCircleStack, HiArrowUpTray } from 'react-icons/hi2'
 
 export default function Settings() {
   const { user } = useAuth()
@@ -158,9 +159,7 @@ export default function Settings() {
           >
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${theme === 'light' ? 'bg-indigo-100 dark:bg-indigo-800' : 'bg-gray-100 dark:bg-gray-700'
               }`}>
-              <svg className={`w-5 h-5 ${theme === 'light' ? 'text-indigo-600' : 'text-gray-500 dark:text-gray-400'}`} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
-              </svg>
+              <HiSun className={`w-5 h-5 ${theme === 'light' ? 'text-indigo-600' : 'text-gray-500 dark:text-gray-400'}`} />
             </div>
             <div className="text-left">
               <p className={`font-medium ${theme === 'light' ? 'text-indigo-700 dark:text-indigo-300' : 'text-gray-900 dark:text-white'}`}>
@@ -179,9 +178,7 @@ export default function Settings() {
           >
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${theme === 'dark' ? 'bg-indigo-100 dark:bg-indigo-800' : 'bg-gray-100 dark:bg-gray-700'
               }`}>
-              <svg className={`w-5 h-5 ${theme === 'dark' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'}`} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
-              </svg>
+              <HiMoon className={`w-5 h-5 ${theme === 'dark' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'}`} />
             </div>
             <div className="text-left">
               <p className={`font-medium ${theme === 'dark' ? 'text-indigo-700 dark:text-indigo-300' : 'text-gray-900 dark:text-white'}`}>
@@ -207,9 +204,7 @@ export default function Settings() {
             className="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 p-4 border border-gray-200 dark:border-gray-700 rounded-lg transition-colors"
           >
             <div className="flex justify-center items-center bg-green-100 dark:bg-green-900/50 rounded-lg w-10 h-10">
-              <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0112 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125" />
-              </svg>
+              <HiTableCells className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
             <div className="text-left">
               <p className="font-medium text-gray-900 dark:text-white">
@@ -225,9 +220,7 @@ export default function Settings() {
             className="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 p-4 border border-gray-200 dark:border-gray-700 rounded-lg transition-colors"
           >
             <div className="flex justify-center items-center bg-emerald-100 dark:bg-emerald-900/50 rounded-lg w-10 h-10">
-              <svg className="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-              </svg>
+              <HiDocumentText className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div className="text-left">
               <p className="font-medium text-gray-900 dark:text-white">
@@ -243,9 +236,7 @@ export default function Settings() {
             className="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 p-4 border border-gray-200 dark:border-gray-700 rounded-lg transition-colors"
           >
             <div className="flex justify-center items-center bg-red-100 dark:bg-red-900/50 rounded-lg w-10 h-10">
-              <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-              </svg>
+              <HiDocumentText className="w-5 h-5 text-red-600 dark:text-red-400" />
             </div>
             <div className="text-left">
               <p className="font-medium text-gray-900 dark:text-white">
@@ -261,9 +252,7 @@ export default function Settings() {
             className="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 p-4 border border-gray-200 dark:border-gray-700 rounded-lg transition-colors"
           >
             <div className="flex justify-center items-center bg-indigo-100 dark:bg-indigo-900/50 rounded-lg w-10 h-10">
-              <svg className="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
-              </svg>
+              <HiCircleStack className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             </div>
             <div className="text-left">
               <p className="font-medium text-gray-900 dark:text-white">
@@ -327,9 +316,7 @@ export default function Settings() {
             </div>
           ) : (
             <>
-              <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-              </svg>
+              <HiArrowUpTray className="w-6 h-6 text-gray-400" />
               <span className="text-gray-600 dark:text-gray-300">Seleccionar archivo JSON de backup</span>
             </>
           )}

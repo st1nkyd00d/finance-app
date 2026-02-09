@@ -4,8 +4,8 @@ import RateCard from './RateCard'
 import RateForm from './RateForm'
 import RateHistory from './RateHistory'
 import CurrencyManager from './CurrencyManager'
-import CurrencyCalculator from './CurrencyCalculator'
 import ConfirmDialog from '../../components/ui/ConfirmDialog'
+import { HiArrowsRightLeft, HiBuildingLibrary, HiArrowPath, HiCurrencyDollar } from 'react-icons/hi2'
 
 export default function ExchangeRates() {
   const [rates, setRates] = useState([])
@@ -16,7 +16,6 @@ export default function ExchangeRates() {
   const [formPair, setFormPair] = useState(null)
   const [historyPair, setHistoryPair] = useState(null)
   const [showCurrencyManager, setShowCurrencyManager] = useState(false)
-  const [showCalculator, setShowCalculator] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [rateToDelete, setRateToDelete] = useState(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
@@ -160,13 +159,6 @@ export default function ExchangeRates() {
             Monedas
           </button>
           <button
-            onClick={() => setShowCalculator(true)}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
-            title="Calculadora de conversión"
-          >
-            Calculadora
-          </button>
-          <button
             onClick={handleOpenCreate}
             className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
           >
@@ -184,9 +176,7 @@ export default function ExchangeRates() {
       {/* Tasas actuales */}
       {rates.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center">
-          <svg className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-          </svg>
+          <HiArrowsRightLeft className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
           <p className="text-gray-500 dark:text-gray-400 mb-4">No hay tasas registradas</p>
           <button
             onClick={handleOpenCreate}
@@ -238,9 +228,7 @@ export default function ExchangeRates() {
             {bcvLoading ? (
               <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
             ) : (
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21" />
-              </svg>
+              <HiBuildingLibrary className="w-4 h-4" />
             )}
             {bcvLoading ? 'Consultando...' : 'USD/VES desde BCV'}
           </button>
@@ -252,9 +240,7 @@ export default function ExchangeRates() {
             {binanceLoading ? (
               <div className="w-4 h-4 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin"></div>
             ) : (
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-              </svg>
+              <HiArrowPath className="w-4 h-4" />
             )}
             {binanceLoading ? 'Consultando...' : 'USDT/VES desde Binance P2P'}
           </button>
@@ -266,9 +252,7 @@ export default function ExchangeRates() {
             {usdtLoading ? (
               <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
             ) : (
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <HiCurrencyDollar className="w-4 h-4" />
             )}
             {usdtLoading ? 'Consultando...' : 'USDT/USD desde Binance'}
           </button>
@@ -297,12 +281,6 @@ export default function ExchangeRates() {
       <CurrencyManager
         isOpen={showCurrencyManager}
         onClose={() => setShowCurrencyManager(false)}
-      />
-
-      {/* Modal calculadora */}
-      <CurrencyCalculator
-        isOpen={showCalculator}
-        onClose={() => setShowCalculator(false)}
       />
 
       {/* Modal confirmación de eliminación */}

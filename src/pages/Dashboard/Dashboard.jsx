@@ -7,6 +7,7 @@ import { processRecurringTransactions } from '../../services/recurring'
 import { fetchCurrentRates } from '../../services/exchangeRates'
 import useCurrencyConvert from '../../hooks/useCurrencyConvert'
 import { getTxAmountUsd, CURRENCY_SYMBOLS, formatAmount } from '../../utils/currency'
+import { HiArrowPath, HiExclamationTriangle, HiCheckCircle } from 'react-icons/hi2'
 
 const DISPLAY_CURRENCIES = ['USD', 'VES', 'USDT']
 
@@ -116,9 +117,7 @@ export default function Dashboard() {
       {recurringProcessed > 0 && (
         <div className="bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 rounded-lg px-4 py-3 mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <svg className="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-            </svg>
+            <HiArrowPath className="w-5 h-5 text-indigo-500" />
             <span className="text-sm text-indigo-700 dark:text-indigo-300 font-medium">
               Se procesaron {recurringProcessed} transaccion{recurringProcessed !== 1 ? 'es' : ''} recurrente{recurringProcessed !== 1 ? 's' : ''}
             </span>
@@ -163,13 +162,9 @@ export default function Dashboard() {
         {oldestDate && (
           <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
             {isStale ? (
-              <svg className="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-              </svg>
+              <HiExclamationTriangle className="w-3.5 h-3.5 text-amber-500" />
             ) : (
-              <svg className="w-3.5 h-3.5 text-green-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <HiCheckCircle className="w-3.5 h-3.5 text-green-500" />
             )}
             <span className={`text-xs ${isStale ? 'text-amber-600 dark:text-amber-400' : 'text-gray-400'}`}>
               Tasas actualizadas hace {hoursStale < 1 ? 'menos de 1 hora' : `${hoursStale}h`}

@@ -7,6 +7,7 @@ import TransactionForm from './TransactionForm'
 import TransferForm from './TransferForm'
 import TransactionFilters from './TransactionFilters'
 import ConfirmDialog from '../../components/ui/ConfirmDialog'
+import { HiMagnifyingGlass } from 'react-icons/hi2'
 
 const PAGE_SIZE = 20
 
@@ -181,9 +182,7 @@ export default function Transactions() {
         </div>
       ) : transactions.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center">
-          <svg className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-          </svg>
+          <HiMagnifyingGlass className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
           <p className="text-gray-500 dark:text-gray-400 mb-4">
             {Object.keys(filters).length > 0
               ? 'No se encontraron transacciones con estos filtros'

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { fetchWallets } from '../../services/wallets'
 import { fetchCategories } from '../../services/categories'
+import { HiMagnifyingGlass, HiAdjustmentsHorizontal } from 'react-icons/hi2'
 
 const TYPE_OPTIONS = [
   { value: 'expense', label: 'Gastos' },
@@ -110,9 +111,7 @@ export default function TransactionFilters({ filters, onChange, onClear }) {
       {/* Search bar always visible */}
       <div className="p-4 flex items-center gap-3">
         <div className="flex-1 relative">
-          <svg className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-          </svg>
+          <HiMagnifyingGlass className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchInput}
@@ -130,9 +129,7 @@ export default function TransactionFilters({ filters, onChange, onClear }) {
               : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
           }`}
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
-          </svg>
+          <HiAdjustmentsHorizontal className="w-4 h-4" />
           Filtros
           {activeFilterCount > 0 && (
             <span className="bg-indigo-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
