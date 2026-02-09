@@ -1,17 +1,17 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
+import { supabase } from '../../services/supabase'
+import { useToast } from '../../contexts/ToastContext'
 
-export default function Register() {
-  const [email, setEmail] = useState('')
+export default function ResetPassword() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const { signUp } = useAuth()
   const navigate = useNavigate()
+  const { addToast } = useToast()
 
   function validatePassword(password) {
     if (password.length < 8) {
@@ -44,14 +44,13 @@ export default function Register() {
     setLoading(true)
 
     try {
-      await signUp(email, password)
-      navigate('/')
+      const { error } = await supabase.auth.updateUser({ password })
+      if (error) throw error
+
+      addToast('Contraseña actualizada correctamente', 'success')
+      navigate('/login')
     } catch (err) {
-      const messages = {
-        'User already registered': 'Este email ya está registrado',
-        'Password should be at least 6 characters': 'La contraseña debe tener al menos 8 caracteres',
-      }
-      setError(messages[err.message] || err.message)
+      setError('Error al actualizar la contraseña. El enlace puede haber expirado.')
     } finally {
       setLoading(false)
     }
@@ -61,8 +60,10 @@ export default function Register() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Finance App</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-2">Crea tu cuenta</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Nueva Contraseña</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-2">
+            Ingresa tu nueva contraseña
+          </p>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8">
@@ -74,25 +75,8 @@ export default function Register() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="tu@email.com"
-              />
-            </div>
-
-            <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Contraseña
+                Nueva Contraseña
               </label>
               <div className="relative">
                 <input
@@ -170,16 +154,9 @@ export default function Register() {
               disabled={loading}
               className="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
+              {loading ? 'Actualizando...' : 'Actualizar Contraseña'}
             </button>
           </form>
-
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
-            ¿Ya tienes cuenta?{' '}
-            <Link to="/login" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 font-medium">
-              Inicia sesión
-            </Link>
-          </p>
         </div>
       </div>
     </div>

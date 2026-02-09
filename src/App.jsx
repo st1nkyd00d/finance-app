@@ -11,6 +11,8 @@ import PWAPrompt from './components/PWAPrompt'
 // Lazy-loaded pages
 const Login = lazy(() => import('./pages/Auth/Login'))
 const Register = lazy(() => import('./pages/Auth/Register'))
+const ForgotPassword = lazy(() => import('./pages/Auth/ForgotPassword'))
+const ResetPassword = lazy(() => import('./pages/Auth/ResetPassword'))
 const Dashboard = lazy(() => import('./pages/Dashboard/Dashboard'))
 const Wallets = lazy(() => import('./pages/Wallets/Wallets'))
 const Transactions = lazy(() => import('./pages/Transactions/Transactions'))
@@ -42,6 +44,8 @@ function App() {
             {/* Rutas publicas - redirige a / si ya esta autenticado */}
             <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
             <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+            <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
             {/* Rutas protegidas - redirige a /login si no esta autenticado */}
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
