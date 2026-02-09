@@ -83,49 +83,47 @@ export default function Categories() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+      <div className="flex justify-center items-center h-64">
+        <div className="border-4 border-indigo-600 border-t-transparent rounded-full w-8 h-8 animate-spin"></div>
       </div>
     )
   }
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Categorias</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="font-bold text-2xl text-gray-900 dark:text-white">Categorias</h1>
         <button
           onClick={handleOpenCreate}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+          className="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg font-medium text-sm text-white transition-colors"
         >
           + Nueva
         </button>
       </div>
 
       {error && (
-        <div role="alert" className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-sm">
+        <div role="alert" className="bg-red-50 dark:bg-red-900/30 mb-4 p-3 border border-red-200 dark:border-red-800 rounded-lg text-red-700 text-sm dark:text-red-300">
           {error}
         </div>
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg mb-6 w-fit">
+      <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 mb-6 p-1 rounded-lg w-fit">
         <button
           onClick={() => setActiveTab('expense')}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            activeTab === 'expense'
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'expense'
               ? 'bg-white dark:bg-gray-700 text-red-600 dark:text-red-400 shadow-sm'
               : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-          }`}
+            }`}
         >
           Gastos ({expenseCategories.length})
         </button>
         <button
           onClick={() => setActiveTab('income')}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            activeTab === 'income'
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'income'
               ? 'bg-white dark:bg-gray-700 text-green-600 dark:text-green-400 shadow-sm'
               : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-          }`}
+            }`}
         >
           Ingresos ({incomeCategories.length})
         </button>
@@ -133,19 +131,19 @@ export default function Categories() {
 
       {/* Lista */}
       {filteredCategories.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center">
-          <p className="text-gray-500 dark:text-gray-400 mb-4">
-            No hay categorias de {activeTab === 'expense' ? 'gastos' : 'ingresos'}
+        <div className="bg-white dark:bg-gray-800 shadow-sm p-12 rounded-xl text-center">
+          <p className="mb-4 text-gray-500 dark:text-gray-400">
+            No hay categorías de {activeTab === 'expense' ? 'gastos' : 'ingresos'}
           </p>
           <button
             onClick={handleOpenCreate}
-            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 font-medium text-sm"
+            className="font-medium text-indigo-600 text-sm hover:text-indigo-700 dark:text-indigo-400"
           >
             Crear una categoria
           </button>
         </div>
       ) : (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm divide-y divide-gray-100 dark:divide-gray-700">
+        <div className="bg-white dark:bg-gray-800 shadow-sm rounded-xl divide-y divide-gray-100 dark:divide-gray-700">
           {filteredCategories.map((category) => (
             <CategoryItem
               key={category.id}
