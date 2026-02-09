@@ -26,7 +26,7 @@ const PRESETS = [
     const start = new Date(today.getFullYear(), today.getMonth(), 1)
     return { dateFrom: start.toISOString().split('T')[0], dateTo: today.toISOString().split('T')[0] }
   }},
-  { label: 'Ultimos 30 dias', getValue: () => {
+  { label: 'Últimos 30 días', getValue: () => {
     const today = new Date()
     const start = new Date(today)
     start.setDate(today.getDate() - 30)
@@ -117,7 +117,7 @@ export default function TransactionFilters({ filters, onChange, onClear }) {
             type="text"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Buscar por descripcion..."
+            placeholder="Buscar por descripción..."
             className="w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           />
         </div>

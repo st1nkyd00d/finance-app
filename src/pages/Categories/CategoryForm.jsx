@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Modal from '../../components/ui/Modal'
+import { validateTextLength, VALIDATION_LIMITS } from '../../utils/validation'
 
 const COLORS = [
   { hex: '#ef4444', name: 'Rojo' },
@@ -46,15 +47,15 @@ export default function CategoryForm({ isOpen, onClose, onSave, category = null,
     e.preventDefault()
     setError('')
 
-    const trimmedName = name.trim()
-    if (!trimmedName) {
-      setError('El nombre es obligatorio')
+    const nameValidation = validateTextLength(name, VALIDATION_LIMITS.NAME_MAX_LENGTH, 'El nombre')
+    if (!nameValidation.valid) {
+      setError(nameValidation.error)
       return
     }
 
     setLoading(true)
     try {
-      const data = { name: trimmedName, color }
+      const data = { name: name.trim(), color }
       if (!isEditing) {
         data.type = type
       }
@@ -71,7 +72,7 @@ export default function CategoryForm({ isOpen, onClose, onSave, category = null,
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEditing ? 'Editar Categoria' : 'Nueva Categoria'}
+      title={isEditing ? 'Editar Categoría' : 'Nueva Categoría'}
     >
       {error && (
         <div role="alert" className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-sm">
@@ -87,11 +88,15 @@ export default function CategoryForm({ isOpen, onClose, onSave, category = null,
           <input
             id="cat-name"
             type="text"
+            maxLength={VALIDATION_LIMITS.NAME_MAX_LENGTH}
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             placeholder="Ej: Comida, Transporte..."
           />
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            {name.length}/{VALIDATION_LIMITS.NAME_MAX_LENGTH} caracteres
+          </p>
         </div>
 
         {!isEditing && (
@@ -161,7 +166,7 @@ export default function CategoryForm({ isOpen, onClose, onSave, category = null,
             disabled={loading}
             className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
           >
-            {loading ? 'Guardando...' : (isEditing ? 'Guardar Cambios' : 'Crear Categoria')}
+            {loading ? 'Guardando...' : (isEditing ? 'Guardar Cambios' : 'Crear Categoría')}
           </button>
         </div>
       </form>

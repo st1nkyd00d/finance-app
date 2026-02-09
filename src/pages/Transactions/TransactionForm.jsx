@@ -3,6 +3,7 @@ import Modal from '../../components/ui/Modal'
 import { fetchWallets } from '../../services/wallets'
 import { fetchCategories } from '../../services/categories'
 import { getCurrentRate } from '../../services/exchangeRates'
+import { validateAmount, formatAmountInput, VALIDATION_LIMITS } from '../../utils/validation'
 
 export default function TransactionForm({ isOpen, onClose, onSave }) {
   const [type, setType] = useState('expense')
@@ -84,19 +85,28 @@ export default function TransactionForm({ isOpen, onClose, onSave }) {
     e.preventDefault()
     setError('')
 
-    const amountNum = parseFloat(amount)
-    if (!amount || isNaN(amountNum) || amountNum <= 0) {
-      setError('Ingresa un monto valido mayor a 0')
+    // Validar monto
+    const amountValidation = validateAmount(amount)
+    if (!amountValidation.valid) {
+      setError(amountValidation.error)
       return
     }
+
     if (!walletId) {
       setError('Selecciona una billetera')
       return
     }
     if (!categoryId) {
-      setError('Selecciona una categoria')
+      setError('Selecciona una categoría')
       return
     }
+
+    // Validar descripción (opcional pero con límite)
+    if (description.trim().length > VALIDATION_LIMITS.DESCRIPTION_MAX_LENGTH) {
+      setError(`La descripción no puede tener más de ${VALIDATION_LIMITS.DESCRIPTION_MAX_LENGTH} caracteres`)
+      return
+    }
+
     if (selectedWallet?.currency === 'VES' && (!exchangeRate || exchangeRate <= 0)) {
       setError('La tasa de cambio debe ser mayor a 0 para billeteras VES')
       return
@@ -108,8 +118,8 @@ export default function TransactionForm({ isOpen, onClose, onSave }) {
         wallet_id: walletId,
         category_id: categoryId,
         type,
-        amount: amountNum,
-        description,
+        amount: amountValidation.value,
+        description: description.trim(),
         date: new Date(date + 'T12:00:00').toISOString(),
         exchange_rate: selectedWallet?.currency === 'VES' ? exchangeRate : null,
       })
@@ -128,7 +138,7 @@ export default function TransactionForm({ isOpen, onClose, onSave }) {
     : null
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Nueva Transaccion">
+    <Modal isOpen={isOpen} onClose={onClose} title="Nueva Transacción">
       {error && (
         <div role="alert" className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-sm">
           {error}
@@ -173,13 +183,18 @@ export default function TransactionForm({ isOpen, onClose, onSave }) {
           <input
             id="tx-amount"
             type="number"
-            step="any"
-            min="0"
+            inputMode="decimal"
+            step="0.01"
+            min="0.01"
+            max={VALIDATION_LIMITS.AMOUNT_MAX_VALUE}
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             placeholder="0.00"
           />
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Máximo: {VALIDATION_LIMITS.AMOUNT_MAX_VALUE.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
+          </p>
         </div>
 
         {/* Conversión a USD (solo para VES) */}
@@ -201,7 +216,9 @@ export default function TransactionForm({ isOpen, onClose, onSave }) {
               {editingRate ? (
                 <input
                   type="number"
-                  step="any"
+                  inputMode="decimal"
+                  step="0.01"
+                  min="0.01"
                   value={exchangeRate || ''}
                   onChange={(e) => {
                     const val = parseFloat(e.target.value)
@@ -254,14 +271,14 @@ export default function TransactionForm({ isOpen, onClose, onSave }) {
           )}
         </div>
 
-        {/* Categoria */}
+        {/* Categoría */}
         <div>
           <label htmlFor="tx-category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Categoria
+            Categoría
           </label>
           {filteredCategories.length === 0 ? (
             <p className="text-sm text-amber-600 dark:text-amber-400">
-              No hay categorias de {type === 'expense' ? 'gastos' : 'ingresos'}
+              No hay categorías de {type === 'expense' ? 'gastos' : 'ingresos'}
             </p>
           ) : (
             <select
@@ -277,19 +294,23 @@ export default function TransactionForm({ isOpen, onClose, onSave }) {
           )}
         </div>
 
-        {/* Descripcion */}
+        {/* Descripción */}
         <div>
           <label htmlFor="tx-desc" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Descripcion <span className="text-gray-400">(opcional)</span>
+            Descripción <span className="text-gray-400">(opcional)</span>
           </label>
           <input
             id="tx-desc"
             type="text"
+            maxLength={VALIDATION_LIMITS.DESCRIPTION_MAX_LENGTH}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             placeholder="Ej: Almuerzo, Pago de luz..."
           />
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            {description.length}/{VALIDATION_LIMITS.DESCRIPTION_MAX_LENGTH} caracteres
+          </p>
         </div>
 
         {/* Fecha */}

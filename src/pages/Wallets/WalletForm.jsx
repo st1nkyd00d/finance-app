@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Modal from '../../components/ui/Modal'
+import { validateTextLength, VALIDATION_LIMITS } from '../../utils/validation'
 
 const CURRENCIES = [
   { value: 'VES', label: 'VES - Bolivares' },
@@ -33,16 +34,16 @@ export default function WalletForm({ isOpen, onClose, onSave, wallet = null }) {
     e.preventDefault()
     setError('')
 
-    const trimmedName = name.trim()
-    if (!trimmedName) {
-      setError('El nombre es obligatorio')
+    const nameValidation = validateTextLength(name, VALIDATION_LIMITS.NAME_MAX_LENGTH, 'El nombre')
+    if (!nameValidation.valid) {
+      setError(nameValidation.error)
       return
     }
 
     setLoading(true)
     try {
       await onSave({
-        name: trimmedName,
+        name: name.trim(),
         currency,
         include_in_total: includeInTotal,
       })
@@ -74,11 +75,15 @@ export default function WalletForm({ isOpen, onClose, onSave, wallet = null }) {
           <input
             id="wallet-name"
             type="text"
+            maxLength={VALIDATION_LIMITS.NAME_MAX_LENGTH}
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             placeholder="Ej: Efectivo, Binance, Banco..."
           />
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            {name.length}/{VALIDATION_LIMITS.NAME_MAX_LENGTH} caracteres
+          </p>
         </div>
 
         <div>
@@ -98,7 +103,7 @@ export default function WalletForm({ isOpen, onClose, onSave, wallet = null }) {
           </select>
           {isEditing && (
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              La moneda no se puede cambiar despues de crear la billetera
+              La moneda no se puede cambiar después de crear la billetera
             </p>
           )}
         </div>

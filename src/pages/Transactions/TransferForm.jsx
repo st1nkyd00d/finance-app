@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Modal from '../../components/ui/Modal'
 import { fetchWallets } from '../../services/wallets'
 import { fetchCurrentRates } from '../../services/exchangeRates'
+import { validateAmount, VALIDATION_LIMITS } from '../../utils/validation'
 
 export default function TransferForm({ isOpen, onClose, onSave }) {
   const [fromWalletId, setFromWalletId] = useState('')
@@ -85,19 +86,26 @@ export default function TransferForm({ isOpen, onClose, onSave }) {
       return
     }
 
-    const outNum = parseFloat(amountOut)
-    const inNum = parseFloat(amountIn)
+    const outValidation = validateAmount(amountOut)
+    if (!outValidation.valid) {
+      setError(`Monto de salida: ${outValidation.error}`)
+      return
+    }
 
-    if (!amountOut || isNaN(outNum) || outNum <= 0) {
-      setError('Ingresa un monto de salida valido')
+    const inValidation = validateAmount(amountIn)
+    if (!inValidation.valid) {
+      setError(`Monto de entrada: ${inValidation.error}`)
       return
     }
-    if (!amountIn || isNaN(inNum) || inNum <= 0) {
-      setError('Ingresa un monto de entrada valido')
-      return
-    }
-    if (isSameCurrency && outNum !== inNum) {
+
+    if (isSameCurrency && outValidation.value !== inValidation.value) {
       setError('Los montos deben ser iguales para billeteras de la misma moneda')
+      return
+    }
+
+    // Validar descripción (opcional pero con límite)
+    if (description.trim().length > VALIDATION_LIMITS.DESCRIPTION_MAX_LENGTH) {
+      setError(`La descripción no puede tener más de ${VALIDATION_LIMITS.DESCRIPTION_MAX_LENGTH} caracteres`)
       return
     }
 
@@ -106,10 +114,10 @@ export default function TransferForm({ isOpen, onClose, onSave }) {
       await onSave({
         from_wallet_id: fromWalletId,
         to_wallet_id: toWalletId,
-        amount_out: outNum,
-        amount_in: inNum,
+        amount_out: outValidation.value,
+        amount_in: inValidation.value,
         conversion_rate: !isSameCurrency && conversionRate ? parseFloat(conversionRate) : null,
-        description,
+        description: description.trim(),
         date: new Date(date + 'T12:00:00').toISOString(),
       })
       onClose()
@@ -157,8 +165,10 @@ export default function TransferForm({ isOpen, onClose, onSave }) {
             <input
               id="tf-amount-out"
               type="number"
-              step="any"
-              min="0"
+              inputMode="decimal"
+              step="0.01"
+              min="0.01"
+              max={VALIDATION_LIMITS.AMOUNT_MAX_VALUE}
               value={amountOut}
               onChange={(e) => setAmountOut(e.target.value)}
               className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -199,16 +209,17 @@ export default function TransferForm({ isOpen, onClose, onSave }) {
               <input
                 id="tf-rate"
                 type="number"
-                step="any"
-                min="0"
+                inputMode="decimal"
+                step="0.01"
+                min="0.01"
                 value={conversionRate}
                 onChange={(e) => setConversionRate(e.target.value)}
                 className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="Tasa de conversion"
+                placeholder="Tasa de conversión"
               />
               {conversionRate && (
                 <p className="text-xs text-gray-400 mt-1">
-                  Tasa cargada automaticamente. Puedes editarla.
+                  Tasa cargada automáticamente. Puedes editarla.
                 </p>
               )}
             </div>
@@ -222,8 +233,10 @@ export default function TransferForm({ isOpen, onClose, onSave }) {
             <input
               id="tf-amount-in"
               type="number"
-              step="any"
-              min="0"
+              inputMode="decimal"
+              step="0.01"
+              min="0.01"
+              max={VALIDATION_LIMITS.AMOUNT_MAX_VALUE}
               value={amountIn}
               onChange={(e) => setAmountIn(e.target.value)}
               disabled={isSameCurrency}
