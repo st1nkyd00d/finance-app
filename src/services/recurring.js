@@ -27,6 +27,7 @@ export async function createRecurringTransaction({
   start_date,
   end_date,
   description,
+  exchange_rate,
 }) {
   const user = await getAuthenticatedUser()
 
@@ -44,6 +45,7 @@ export async function createRecurringTransaction({
       last_processed: null,
       is_active: true,
       description: description || null,
+      exchange_rate: exchange_rate || null,
     })
     .select(RECURRING_SELECT)
     .single()
@@ -167,6 +169,7 @@ export async function processRecurringTransactions() {
             ? `${recurring.description} (Recurrente)`
             : 'Transaccion recurrente',
           date: currentDate.toISOString(),
+          exchange_rate: recurring.exchange_rate || null,
         })
         .select()
         .single()

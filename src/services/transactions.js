@@ -4,7 +4,8 @@ import { getAuthenticatedUser } from '../utils/auth'
 const TX_SELECT = `
   *,
   wallet:wallets(id, name, currency),
-  category:categories(id, name, type, color)
+  category:categories(id, name, type, color),
+  goal:savings_goals(id, name, target_amount)
 `
 
 export async function fetchTransactions({
@@ -62,8 +63,23 @@ export async function fetchTransactions({
   return { data, count }
 }
 
-export async function createTransaction({ wallet_id, category_id, type, amount, description, date, exchange_rate: customRate }) {
+export async function createTransaction({ wallet_id, category_id, type, amount, description, date, exchange_rate: customRate, goal_id }) {
   const user = await getAuthenticatedUser()
+
+  // Validación: goal_id solo para savings
+  if (goal_id && type !== 'savings') {
+    throw new Error('Las metas solo se pueden asignar a transacciones de ahorro')
+  }
+
+  // Validación: savings requiere goal_id
+  if (type === 'savings' && !goal_id) {
+    throw new Error('Las transacciones de ahorro requieren una meta asignada')
+  }
+
+  // Validación: income/expense requieren category_id, savings no
+  if (type !== 'savings' && !category_id) {
+    throw new Error('Las transacciones de ingreso y gasto requieren una categoría')
+  }
 
   // Obtener moneda de la billetera
   const { data: wallet, error: walletError } = await supabase
@@ -109,7 +125,7 @@ export async function createTransaction({ wallet_id, category_id, type, amount, 
     .insert({
       user_id: user.id,
       wallet_id,
-      category_id,
+      category_id: type === 'savings' ? null : category_id,
       type,
       amount,
       currency: wallet.currency,
@@ -117,6 +133,7 @@ export async function createTransaction({ wallet_id, category_id, type, amount, 
       amount_usd: amountUsd,
       description: description || null,
       date: date || new Date().toISOString(),
+      goal_id: goal_id || null,
     })
     .select(TX_SELECT)
     .single()

@@ -2,8 +2,10 @@ import { useState, useEffect, useMemo } from 'react'
 import Modal from '../../components/ui/Modal'
 import { fetchWallets } from '../../services/wallets'
 import { fetchCategories } from '../../services/categories'
-import { getCurrentRate } from '../../services/exchangeRates'
+import { fetchGoals } from '../../services/goals'
+import { getCurrentRate, fetchBinanceRate, fetchBCVRate } from '../../services/exchangeRates'
 import { validateAmount, formatAmountInput, VALIDATION_LIMITS } from '../../utils/validation'
+import { formatAmount } from '../../utils/currency'
 
 export default function TransactionForm({ isOpen, onClose, onSave }) {
   const [type, setType] = useState('expense')
@@ -17,18 +19,22 @@ export default function TransactionForm({ isOpen, onClose, onSave }) {
 
   const [wallets, setWallets] = useState([])
   const [categories, setCategories] = useState([])
+  const [goals, setGoals] = useState([])
+  const [goalId, setGoalId] = useState('')
 
   // Estado para tasa de cambio (cuando es VES)
   const [exchangeRate, setExchangeRate] = useState(null)
-  const [editingRate, setEditingRate] = useState(false)
-  const [rateSource, setRateSource] = useState(null)
+  const [rateType, setRateType] = useState('binance') // 'binance', 'bcv', 'libre'
+  const [loadingRate, setLoadingRate] = useState(false)
+  const [rateError, setRateError] = useState('')
 
   useEffect(() => {
     if (isOpen) {
-      Promise.all([fetchWallets(), fetchCategories()])
-        .then(([w, c]) => {
+      Promise.all([fetchWallets(), fetchCategories(), fetchGoals()])
+        .then(([w, c, g]) => {
           setWallets(w)
           setCategories(c)
+          setGoals(g.filter(goal => goal.is_active))
           if (w.length > 0 && !walletId) setWalletId(w[0].id)
         })
         .catch((err) => console.error('Error cargando datos del formulario:', err))
@@ -37,39 +43,67 @@ export default function TransactionForm({ isOpen, onClose, onSave }) {
       setDescription('')
       setDate(new Date().toISOString().split('T')[0])
       setError('')
+      setGoalId('')
       setExchangeRate(null)
-      setEditingRate(false)
-      setRateSource(null)
+      setRateType('binance')
+      setRateError('')
     }
   }, [isOpen])
 
-  // Cargar tasa de cambio cuando la billetera es VES
+  // Cargar tasa de cambio según el tipo seleccionado (binance, bcv, libre)
   useEffect(() => {
     async function loadRate() {
       const wallet = wallets.find((w) => w.id === walletId)
-      if (wallet?.currency === 'VES') {
-        const rateData = await getCurrentRate('USDT', 'VES')
-        if (rateData) {
-          setExchangeRate(rateData.rate)
-          setRateSource(rateData.source)
+
+      // Solo cargar si es VES y no es tipo libre
+      if (!wallet || wallet.currency !== 'VES' || rateType === 'libre') {
+        if (wallet?.currency !== 'VES') {
+          setExchangeRate(null)
+          setRateError('')
         }
-      } else {
-        setExchangeRate(null)
-        setRateSource(null)
+        return
       }
-      setEditingRate(false)
+
+      setLoadingRate(true)
+      setRateError('')
+
+      try {
+        let rate = null
+
+        if (rateType === 'binance') {
+          rate = await fetchBinanceRate()
+        } else if (rateType === 'bcv') {
+          rate = await fetchBCVRate()
+        }
+
+        if (rate) {
+          setExchangeRate(rate)
+        } else {
+          setRateError('No se pudo obtener la tasa')
+        }
+      } catch (err) {
+        console.error('Error cargando tasa:', err)
+        setRateError(err.message || 'Error al cargar tasa')
+      } finally {
+        setLoadingRate(false)
+      }
     }
+
     if (walletId && wallets.length > 0) {
       loadRate()
     }
-  }, [walletId, wallets])
+  }, [walletId, wallets, rateType])
 
   // Billetera seleccionada
   const selectedWallet = wallets.find((w) => w.id === walletId)
 
   // Filtrar categorias por tipo seleccionado (memoizado para evitar re-renders infinitos)
+  // Para 'savings', usamos categorías de 'expense' ya que técnicamente es dinero que sale
   const filteredCategories = useMemo(
-    () => categories.filter((c) => c.type === type),
+    () => {
+      const targetType = type === 'savings' ? 'expense' : type
+      return categories.filter((c) => c.type === targetType)
+    },
     [categories, type]
   )
 
@@ -107,21 +141,28 @@ export default function TransactionForm({ isOpen, onClose, onSave }) {
       return
     }
 
-    if (selectedWallet?.currency === 'VES' && (!exchangeRate || exchangeRate <= 0)) {
-      setError('La tasa de cambio debe ser mayor a 0 para billeteras VES')
-      return
+    if (selectedWallet?.currency === 'VES') {
+      if (!exchangeRate || exchangeRate <= 0) {
+        setError('La tasa de cambio debe ser mayor a 0 para billeteras VES')
+        return
+      }
+      if (rateType === 'libre' && !exchangeRate) {
+        setError('Ingresa una tasa de cambio personalizada')
+        return
+      }
     }
 
     setLoading(true)
     try {
       await onSave({
         wallet_id: walletId,
-        category_id: categoryId,
+        category_id: type === 'savings' ? null : categoryId,
         type,
         amount: amountValidation.value,
         description: description.trim(),
         date: new Date(date + 'T12:00:00').toISOString(),
         exchange_rate: selectedWallet?.currency === 'VES' ? exchangeRate : null,
+        goal_id: type === 'savings' ? (goalId || null) : null,
       })
       onClose()
     } catch (err) {
@@ -149,11 +190,11 @@ export default function TransactionForm({ isOpen, onClose, onSave }) {
         {/* Tipo */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo</label>
-          <div className="flex gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
               onClick={() => setType('expense')}
-              className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+              className={`py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
                 type === 'expense'
                   ? 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 border-2 border-red-300 dark:border-red-700'
                   : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-2 border-transparent hover:bg-gray-100 dark:hover:bg-gray-600'
@@ -164,13 +205,24 @@ export default function TransactionForm({ isOpen, onClose, onSave }) {
             <button
               type="button"
               onClick={() => setType('income')}
-              className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+              className={`py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
                 type === 'income'
                   ? 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 border-2 border-green-300 dark:border-green-700'
                   : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-2 border-transparent hover:bg-gray-100 dark:hover:bg-gray-600'
               }`}
             >
               Ingreso
+            </button>
+            <button
+              type="button"
+              onClick={() => setType('savings')}
+              className={`py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                type === 'savings'
+                  ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-2 border-indigo-300 dark:border-indigo-700'
+                  : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-2 border-transparent hover:bg-gray-100 dark:hover:bg-gray-600'
+              }`}
+            >
+              Ahorro
             </button>
           </div>
         </div>
@@ -199,21 +251,61 @@ export default function TransactionForm({ isOpen, onClose, onSave }) {
 
         {/* Conversión a USD (solo para VES) */}
         {selectedWallet?.currency === 'VES' && (
-          <div className="p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-blue-700 dark:text-blue-300">Equivalente en USD</span>
-              {amountUsd && (
-                <span className="text-lg font-semibold text-blue-900 dark:text-blue-100">
-                  ${amountUsd}
-                </span>
-              )}
+          <div className="p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg space-y-3">
+            {/* Selector de tipo de tasa */}
+            <div>
+              <label className="block text-xs font-medium text-blue-700 dark:text-blue-300 mb-2">
+                Tipo de tasa
+              </label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setRateType('binance')}
+                  className={`flex-1 py-1.5 px-2 rounded text-xs font-medium transition-colors ${
+                    rateType === 'binance'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 border border-blue-300 dark:border-blue-600 hover:bg-blue-50 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  Binance
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRateType('bcv')}
+                  className={`flex-1 py-1.5 px-2 rounded text-xs font-medium transition-colors ${
+                    rateType === 'bcv'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 border border-blue-300 dark:border-blue-600 hover:bg-blue-50 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  BCV
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRateType('libre')}
+                  className={`flex-1 py-1.5 px-2 rounded text-xs font-medium transition-colors ${
+                    rateType === 'libre'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 border border-blue-300 dark:border-blue-600 hover:bg-blue-50 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  Personalizada
+                </button>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-blue-600 dark:text-blue-400">
-                Tasa {rateSource === 'binance' ? 'Binance' : rateSource === 'bcv' ? 'BCV' : 'manual'}:
-              </span>
-              {editingRate ? (
+            {/* Tasa de cambio */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-blue-600 dark:text-blue-400">
+                  Tasa de cambio (Bs/USD):
+                </span>
+                {loadingRate && (
+                  <span className="text-xs text-blue-500 dark:text-blue-400">Cargando...</span>
+                )}
+              </div>
+
+              {rateType === 'libre' ? (
                 <input
                   type="number"
                   inputMode="decimal"
@@ -223,28 +315,35 @@ export default function TransactionForm({ isOpen, onClose, onSave }) {
                   onChange={(e) => {
                     const val = parseFloat(e.target.value)
                     setExchangeRate(val > 0 ? val : null)
+                    setRateError('')
                   }}
-                  className="w-24 px-2 py-1 text-sm border border-blue-300 dark:border-blue-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  placeholder="Ej: 45.50"
+                  className="w-full px-3 py-2 text-sm border border-blue-300 dark:border-blue-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               ) : (
-                <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                  {exchangeRate ? exchangeRate.toLocaleString('es-VE') : 'No disponible'}
-                </span>
+                <div className="px-3 py-2 bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-700 rounded">
+                  <span className="text-base font-semibold text-blue-900 dark:text-blue-100">
+                    {exchangeRate ? exchangeRate.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 6 }) : '—'}
+                  </span>
+                </div>
               )}
-              <button
-                type="button"
-                onClick={() => setEditingRate(!editingRate)}
-                className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 underline"
-              >
-                {editingRate ? 'Listo' : 'Editar'}
-              </button>
+
+              {rateError && (
+                <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                  {rateError}
+                </p>
+              )}
             </div>
 
-            {!exchangeRate && (
-              <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
-                No hay tasa registrada. Ve a Tasas de Cambio para agregar una.
-              </p>
-            )}
+            {/* Equivalente en USD */}
+            <div className="pt-2 border-t border-blue-200 dark:border-blue-700">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-blue-700 dark:text-blue-300">Equivalente en USD</span>
+                <span className="text-lg font-semibold text-blue-900 dark:text-blue-100">
+                  ${amountUsd || '0.00'}
+                </span>
+              </div>
+            </div>
           </div>
         )}
 
@@ -271,28 +370,64 @@ export default function TransactionForm({ isOpen, onClose, onSave }) {
           )}
         </div>
 
-        {/* Categoría */}
-        <div>
-          <label htmlFor="tx-category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Categoría
-          </label>
-          {filteredCategories.length === 0 ? (
-            <p className="text-sm text-amber-600 dark:text-amber-400">
-              No hay categorías de {type === 'expense' ? 'gastos' : 'ingresos'}
-            </p>
-          ) : (
-            <select
-              id="tx-category"
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            >
-              {filteredCategories.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-          )}
-        </div>
+        {/* Categoría (no aplica para ahorros) */}
+        {type !== 'savings' && (
+          <div>
+            <label htmlFor="tx-category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Categoría
+            </label>
+            {filteredCategories.length === 0 ? (
+              <p className="text-sm text-amber-600 dark:text-amber-400">
+                No hay categorías de {type === 'expense' ? 'gastos' : 'ingresos'}
+              </p>
+            ) : (
+              <select
+                id="tx-category"
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              >
+                {filteredCategories.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            )}
+          </div>
+        )}
+
+        {/* Meta de Ahorro (solo para ahorros) */}
+        {type === 'savings' && (
+          <div>
+            <label htmlFor="tx-goal" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Meta de Ahorro <span className="text-red-500">*</span>
+            </label>
+            {goals.length === 0 ? (
+              <p className="text-sm text-amber-600 dark:text-amber-400">
+                No tienes metas activas. Crea una meta primero en la sección de Metas de Ahorro.
+              </p>
+            ) : (
+              <>
+                <select
+                  id="tx-goal"
+                  value={goalId}
+                  onChange={(e) => setGoalId(e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">Selecciona una meta</option>
+                  {goals.map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.name} (${formatAmount(g.target_amount)})
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  El monto será apartado de tu billetera y sumado al progreso de esta meta
+                </p>
+              </>
+            )}
+          </div>
+        )}
 
         {/* Descripción */}
         <div>
@@ -338,7 +473,12 @@ export default function TransactionForm({ isOpen, onClose, onSave }) {
           </button>
           <button
             type="submit"
-            disabled={loading || wallets.length === 0 || filteredCategories.length === 0}
+            disabled={
+              loading ||
+              wallets.length === 0 ||
+              (type !== 'savings' && filteredCategories.length === 0) ||
+              (type === 'savings' && goals.length === 0)
+            }
             className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
           >
             {loading ? 'Guardando...' : 'Guardar'}

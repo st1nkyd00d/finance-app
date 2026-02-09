@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Modal from '../../components/ui/Modal'
+import { getCurrentRate, fetchBinanceRate, fetchBCVRate } from '../../services/exchangeRates'
 
 const FREQUENCIES = [
   { value: 'daily', label: 'Diaria' },
@@ -30,6 +31,12 @@ export default function RecurringForm({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // Estado para tasa de cambio (cuando es VES)
+  const [exchangeRate, setExchangeRate] = useState(null)
+  const [rateType, setRateType] = useState('binance') // 'binance', 'bcv', 'libre'
+  const [loadingRate, setLoadingRate] = useState(false)
+  const [rateError, setRateError] = useState('')
+
   const isEditing = !!recurring
 
   useEffect(() => {
@@ -44,6 +51,11 @@ export default function RecurringForm({
         end_date: recurring.end_date || '',
         description: recurring.description || '',
       })
+      // Cargar la tasa de cambio guardada si existe
+      if (recurring.exchange_rate) {
+        setExchangeRate(recurring.exchange_rate)
+        setRateType('libre')
+      }
     } else {
       setFormData({
         type: 'expense',
@@ -55,9 +67,56 @@ export default function RecurringForm({
         end_date: '',
         description: '',
       })
+      setExchangeRate(null)
+      setRateType('binance')
     }
     setError('')
+    setRateError('')
   }, [recurring, isOpen, wallets])
+
+  // Cargar tasa de cambio según el tipo seleccionado (binance, bcv, libre)
+  useEffect(() => {
+    async function loadRate() {
+      const wallet = wallets.find((w) => w.id === formData.wallet_id)
+
+      // Solo cargar si es VES y no es tipo libre
+      if (!wallet || wallet.currency !== 'VES' || rateType === 'libre') {
+        if (wallet?.currency !== 'VES') {
+          setExchangeRate(null)
+          setRateError('')
+        }
+        return
+      }
+
+      setLoadingRate(true)
+      setRateError('')
+
+      try {
+        let rate = null
+
+        if (rateType === 'binance') {
+          rate = await fetchBinanceRate()
+        } else if (rateType === 'bcv') {
+          rate = await fetchBCVRate()
+        }
+
+        if (rate) {
+          setExchangeRate(rate)
+        } else {
+          setRateError('No se pudo obtener la tasa')
+        }
+      } catch (err) {
+        console.error('Error cargando tasa:', err)
+        setRateError(err.message || 'Error al cargar tasa')
+      } finally {
+        setLoadingRate(false)
+      }
+    }
+
+    if (formData.wallet_id && wallets.length > 0 && isOpen) {
+      loadRate()
+    }
+  }, [formData.wallet_id, wallets, isOpen, rateType])
 
   // Filtrar categorias segun tipo
   const filteredCategories = categories.filter((c) => c.type === formData.type)
@@ -95,6 +154,17 @@ export default function RecurringForm({
       return
     }
 
+    if (selectedWallet?.currency === 'VES') {
+      if (!exchangeRate || exchangeRate <= 0) {
+        setError('La tasa de cambio debe ser mayor a 0 para billeteras VES')
+        return
+      }
+      if (rateType === 'libre' && !exchangeRate) {
+        setError('Ingresa una tasa de cambio personalizada')
+        return
+      }
+    }
+
     setLoading(true)
     try {
       await onSubmit({
@@ -106,6 +176,7 @@ export default function RecurringForm({
         start_date: formData.start_date,
         end_date: formData.end_date || null,
         description: formData.description,
+        exchange_rate: selectedWallet?.currency === 'VES' ? exchangeRate : null,
       })
       onClose()
     } catch (err) {
@@ -116,6 +187,12 @@ export default function RecurringForm({
   }
 
   const selectedWallet = wallets.find((w) => w.id === formData.wallet_id)
+
+  // Calcular equivalente en USD
+  const amountNum = parseFloat(formData.amount) || 0
+  const amountUsd = selectedWallet?.currency === 'VES' && exchangeRate > 0
+    ? (amountNum / exchangeRate).toFixed(2)
+    : null
 
   return (
     <Modal
@@ -220,6 +297,103 @@ export default function RecurringForm({
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
+
+        {/* Conversión a USD (solo para VES) */}
+        {selectedWallet?.currency === 'VES' && (
+          <div className="p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg space-y-3">
+            {/* Selector de tipo de tasa */}
+            <div>
+              <label className="block text-xs font-medium text-blue-700 dark:text-blue-300 mb-2">
+                Tipo de tasa
+              </label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setRateType('binance')}
+                  className={`flex-1 py-1.5 px-2 rounded text-xs font-medium transition-colors ${
+                    rateType === 'binance'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 border border-blue-300 dark:border-blue-600 hover:bg-blue-50 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  Binance
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRateType('bcv')}
+                  className={`flex-1 py-1.5 px-2 rounded text-xs font-medium transition-colors ${
+                    rateType === 'bcv'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 border border-blue-300 dark:border-blue-600 hover:bg-blue-50 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  BCV
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRateType('libre')}
+                  className={`flex-1 py-1.5 px-2 rounded text-xs font-medium transition-colors ${
+                    rateType === 'libre'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 border border-blue-300 dark:border-blue-600 hover:bg-blue-50 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  Personalizada
+                </button>
+              </div>
+            </div>
+
+            {/* Tasa de cambio */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-blue-600 dark:text-blue-400">
+                  Tasa de cambio (Bs/USD):
+                </span>
+                {loadingRate && (
+                  <span className="text-xs text-blue-500 dark:text-blue-400">Cargando...</span>
+                )}
+              </div>
+
+              {rateType === 'libre' ? (
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={exchangeRate || ''}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value)
+                    setExchangeRate(val > 0 ? val : null)
+                    setRateError('')
+                  }}
+                  placeholder="Ej: 45.50"
+                  className="w-full px-3 py-2 text-sm border border-blue-300 dark:border-blue-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              ) : (
+                <div className="px-3 py-2 bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-700 rounded">
+                  <span className="text-base font-semibold text-blue-900 dark:text-blue-100">
+                    {exchangeRate ? exchangeRate.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 6 }) : '—'}
+                  </span>
+                </div>
+              )}
+
+              {rateError && (
+                <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                  {rateError}
+                </p>
+              )}
+            </div>
+
+            {/* Equivalente en USD */}
+            <div className="pt-2 border-t border-blue-200 dark:border-blue-700">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-blue-700 dark:text-blue-300">Equivalente en USD</span>
+                <span className="text-lg font-semibold text-blue-900 dark:text-blue-100">
+                  ${amountUsd || '0.00'}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Frecuencia */}
         <div>

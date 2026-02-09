@@ -19,6 +19,7 @@ const Transactions = lazy(() => import('./pages/Transactions/Transactions'))
 const Categories = lazy(() => import('./pages/Categories/Categories'))
 const ExchangeRates = lazy(() => import('./pages/ExchangeRates/ExchangeRates'))
 const Budgets = lazy(() => import('./pages/Budgets/Budgets'))
+const Goals = lazy(() => import('./pages/Goals/Goals'))
 const Recurring = lazy(() => import('./pages/Recurring/Recurring'))
 const Analytics = lazy(() => import('./pages/Analytics/Analytics'))
 const Settings = lazy(() => import('./pages/Settings/Settings'))
@@ -55,6 +56,7 @@ function App() {
               <Route path="/categories" element={<Categories />} />
               <Route path="/exchange-rates" element={<ExchangeRates />} />
               <Route path="/budgets" element={<Budgets />} />
+              <Route path="/goals" element={<Goals />} />
               <Route path="/recurring" element={<Recurring />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/settings" element={<Settings />} />

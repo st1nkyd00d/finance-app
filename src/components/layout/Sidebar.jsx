@@ -7,6 +7,7 @@ import {
   HiTag,
   HiArrowsRightLeft,
   HiChartBar,
+  HiTrophy,
   HiArrowPath,
   HiChartPie,
   HiCog6Tooth,
@@ -21,6 +22,7 @@ const navigation = [
   { name: 'Categorías', path: '/categories', icon: HiTag },
   { name: 'Tasas de Cambio', path: '/exchange-rates', icon: HiArrowsRightLeft },
   { name: 'Presupuestos', path: '/budgets', icon: HiChartBar },
+  { name: 'Metas de Ahorro', path: '/goals', icon: HiTrophy },
   { name: 'Recurrentes', path: '/recurring', icon: HiArrowPath },
   { name: 'Análisis', path: '/analytics', icon: HiChartPie },
 ]
