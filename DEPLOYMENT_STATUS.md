@@ -32,6 +32,16 @@
    - `DEPLOYMENT_GUIDE.md` - Guía completa paso a paso
    - `QUICK_DEPLOY.md` - Referencia rápida con comandos
    - `DEPLOYMENT_STATUS.md` - Este archivo (estado actual)
+   - `SECURITY_IMPROVEMENTS.md` - Mejoras de seguridad implementadas
+   - `SUPABASE_CONFIG.md` - Configuración post-deploy de Supabase
+
+6. **Mejoras de Seguridad y UX** ✅ (NUEVO)
+   - Contraseñas fuertes: mínimo 8 caracteres + número + letra
+   - Toggle mostrar/ocultar contraseña
+   - Recuperación de contraseña por email
+   - Autocomplete para password managers
+   - Correcciones ortográficas en español (contraseña, sesión)
+   - Validación mejorada de contraseñas
 
 ### Estructura del Proyecto
 
@@ -58,8 +68,13 @@ finance-app/
 │   ├── main.jsx                   # Entry point
 │   ├── App.jsx                    # Router principal
 │   ├── services/supabase.js       # Cliente Supabase
-│   ├── contexts/AuthContext.jsx   # Autenticación
+│   ├── contexts/AuthContext.jsx   # Autenticación (mejorado)
 │   └── pages/                     # Páginas de la app
+│       ├── Auth/
+│       │   ├── Login.jsx          # Login (mejorado)
+│       │   ├── Register.jsx       # Registro (mejorado)
+│       │   ├── ForgotPassword.jsx # Recuperar contraseña (nuevo)
+│       │   └── ResetPassword.jsx  # Establecer nueva contraseña (nuevo)
 ├── DEPLOYMENT_GUIDE.md            # Guía completa
 ├── QUICK_DEPLOY.md                # Referencia rápida
 └── DEPLOYMENT_STATUS.md           # Este archivo
@@ -203,6 +218,9 @@ No se requieren más cambios de código. Solo falta:
 ---
 
 **Fecha de preparación**: 2026-02-09
-**Commit inicial**: 7c45233
+**Commits**:
+- `7c45233` - Initial commit - Finance PWA ready for deployment
+- `25f25df` - Add comprehensive deployment documentation
+- `ed3e678` - Improve authentication security and UX
 **Branch**: main
-**Status**: ✅ Ready for deployment
+**Status**: ✅ Ready for deployment with security improvements
