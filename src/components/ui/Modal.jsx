@@ -58,7 +58,7 @@ export default function Modal({ isOpen, onClose, title, children }) {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
       <div
         ref={modalRef}
@@ -67,9 +67,9 @@ export default function Modal({ isOpen, onClose, title, children }) {
         aria-labelledby={titleId}
         tabIndex={-1}
         onKeyDown={handleKeyDown}
-        className="relative bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md mx-4 p-6 outline-none"
+        className="relative bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md max-h-[90vh] flex flex-col outline-none"
       >
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between p-6 pb-4 flex-shrink-0">
           <h2 id={titleId} className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h2>
           <button
             onClick={onClose}
@@ -79,7 +79,9 @@ export default function Modal({ isOpen, onClose, title, children }) {
             <HiXMark className="w-5 h-5" />
           </button>
         </div>
-        {children}
+        <div className="px-6 pb-6 overflow-y-auto flex-1">
+          {children}
+        </div>
       </div>
     </div>
   )

@@ -45,14 +45,14 @@ export default function GoalCard({ goal, onEdit, onDelete, onToggleActive }) {
   return (
     <div className={`bg-white dark:bg-gray-800 rounded-lg shadow p-6 ${!is_active ? 'opacity-60' : ''}`}>
       {/* Header */}
-      <div className="flex items-start justify-between mb-4">
+      <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+          <h3 className="mb-1 font-semibold text-gray-900 text-lg dark:text-white">
             {name}
-            {!is_active && <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">(Inactiva)</span>}
+            {!is_active && <span className="ml-2 text-gray-500 text-sm dark:text-gray-400">(Inactiva)</span>}
           </h3>
           {description && (
-            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{description}</p>
+            <p className="text-gray-600 text-sm dark:text-gray-400 line-clamp-2">{description}</p>
           )}
         </div>
         {statusBadge && (
@@ -64,25 +64,25 @@ export default function GoalCard({ goal, onEdit, onDelete, onToggleActive }) {
 
       {/* Amount Display */}
       <div className="mb-4">
-        <div className="flex items-baseline justify-between mb-2">
-          <span className="text-2xl font-bold text-gray-900 dark:text-white">
+        <div className="flex justify-between items-baseline mb-2">
+          <span className="font-bold text-2xl text-gray-900 dark:text-white">
             ${formatAmount(current)}
           </span>
-          <span className="text-sm text-gray-600 dark:text-gray-400">
+          <span className="text-gray-600 text-sm dark:text-gray-400">
             de ${formatAmount(target_amount)}
           </span>
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+        <div className="bg-gray-200 dark:bg-gray-700 rounded-full w-full h-3 overflow-hidden">
           <div
             className={`h-full ${progressColor} transition-all duration-300`}
             style={{ width: `${Math.min(percentage, 100)}%` }}
           />
         </div>
 
-        <div className="flex items-center justify-between mt-2">
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <div className="flex justify-between items-center mt-2">
+          <span className="font-medium text-gray-700 text-sm dark:text-gray-300">
             {percentage}%
           </span>
           {hasConversionError && (
@@ -98,7 +98,7 @@ export default function GoalCard({ goal, onEdit, onDelete, onToggleActive }) {
         <div className="flex items-center gap-2 mb-4 text-sm">
           <HiCalendar className="w-4 h-4 text-gray-500 dark:text-gray-400" />
           <span className="text-gray-600 dark:text-gray-400">Fecha límite:</span>
-          <span className="font-medium">{new Date(deadline).toLocaleDateString('es-VE')}</span>
+          <span className="font-medium dark:text-gray-400">{new Date(deadline).toLocaleDateString('es-VE')}</span>
           {daysDisplay() && (
             <>
               <span className="text-gray-400">•</span>
@@ -109,14 +109,13 @@ export default function GoalCard({ goal, onEdit, onDelete, onToggleActive }) {
       )}
 
       {/* Actions */}
-      <div className="flex items-center gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="flex items-center gap-2 pt-4 border-gray-200 dark:border-gray-700 border-t">
         <button
           onClick={() => onToggleActive(id, !is_active)}
-          className={`flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
-            is_active
-              ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-              : 'text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20'
-          }`}
+          className={`flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${is_active
+            ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+            : 'text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20'
+            }`}
           aria-label={is_active ? 'Desactivar meta' : 'Activar meta'}
         >
           {is_active ? (
@@ -134,7 +133,7 @@ export default function GoalCard({ goal, onEdit, onDelete, onToggleActive }) {
 
         <button
           onClick={() => onEdit(goal)}
-          className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-indigo-700 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
+          className="flex items-center gap-1 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 px-3 py-1.5 rounded-lg font-medium text-indigo-700 text-sm dark:text-indigo-400 transition-colors"
           aria-label="Editar meta"
         >
           <HiPencil className="w-4 h-4" />
@@ -143,7 +142,7 @@ export default function GoalCard({ goal, onEdit, onDelete, onToggleActive }) {
 
         <button
           onClick={() => onDelete(id, name)}
-          className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors ml-auto"
+          className="flex items-center gap-1 hover:bg-red-50 dark:hover:bg-red-900/20 ml-auto px-3 py-1.5 rounded-lg font-medium text-red-700 text-sm dark:text-red-400 transition-colors"
           aria-label="Eliminar meta"
         >
           <HiTrash className="w-4 h-4" />
