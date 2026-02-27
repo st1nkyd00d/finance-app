@@ -59,6 +59,12 @@ export default function TransactionItem({ transaction, onDelete }) {
                 <span className="text-xs text-blue-500 dark:text-blue-400">Tasa: {parseFloat(transaction.conversion_rate).toLocaleString('es-VE', { minimumFractionDigits: 2 })}</span>
               </>
             )}
+            {transaction.fee && transaction.type === 'transfer_out' && (
+              <>
+                <span className="text-xs text-gray-300 dark:text-gray-600">|</span>
+                <span className="text-xs text-amber-500 dark:text-amber-400">Comisión: {parseFloat(transaction.fee).toLocaleString('es-VE', { minimumFractionDigits: 2 })} {symbol}</span>
+              </>
+            )}
             {transaction.description && (
               <>
                 <span className="text-xs text-gray-300 dark:text-gray-600">|</span>

@@ -10,6 +10,7 @@ export default function TransferForm({ isOpen, onClose, onSave }) {
   const [toWalletId, setToWalletId] = useState('')
   const [amountOut, setAmountOut] = useState('')
   const [amountIn, setAmountIn] = useState('')
+  const [fee, setFee] = useState('')
   const [conversionRate, setConversionRate] = useState('')
   const [description, setDescription] = useState('')
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0])
@@ -34,6 +35,7 @@ export default function TransferForm({ isOpen, onClose, onSave }) {
 
       setAmountOut('')
       setAmountIn('')
+      setFee('')
       setConversionRate('')
       setDescription('')
       setDate(new Date().toISOString().split('T')[0])
@@ -66,17 +68,22 @@ export default function TransferForm({ isOpen, onClose, onSave }) {
     }
   }, [fromWalletId, toWalletId, rates])
 
-  // Auto-calcular monto destino cuando cambian monto origen o tasa
+  // Auto-calcular monto destino cuando cambian monto origen, tasa o comisión
   useEffect(() => {
+    const out = parseFloat(amountOut) || 0
+    const feeVal = parseFloat(fee) || 0
+    const effectiveOut = Math.max(0, out - feeVal)
+
     if (isSameCurrency) {
-      setAmountIn(amountOut)
+      setAmountIn(effectiveOut > 0 ? String(Math.round(effectiveOut * 100) / 100) : '')
     } else if (amountOut && conversionRate) {
-      const result = parseFloat(amountOut) * parseFloat(conversionRate)
-      if (!isNaN(result)) {
+      const rate = parseFloat(conversionRate)
+      if (!isNaN(rate) && rate > 0) {
+        const result = effectiveOut * rate
         setAmountIn(String(Math.round(result * 100) / 100))
       }
     }
-  }, [amountOut, conversionRate, isSameCurrency])
+  }, [amountOut, fee, conversionRate, isSameCurrency])
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -99,12 +106,17 @@ export default function TransferForm({ isOpen, onClose, onSave }) {
       return
     }
 
-    if (isSameCurrency && outValidation.value !== inValidation.value) {
-      setError('Los montos deben ser iguales para billeteras de la misma moneda')
+    const feeVal = fee ? parseFloat(fee) : 0
+    if (fee && (isNaN(feeVal) || feeVal < 0)) {
+      setError('La comisión debe ser un valor positivo')
       return
     }
 
-    // Validar descripción (opcional pero con límite)
+    if (feeVal >= outValidation.value) {
+      setError('La comisión no puede ser mayor o igual al monto enviado')
+      return
+    }
+
     if (description.trim().length > VALIDATION_LIMITS.DESCRIPTION_MAX_LENGTH) {
       setError(`La descripción no puede tener más de ${VALIDATION_LIMITS.DESCRIPTION_MAX_LENGTH} caracteres`)
       return
@@ -118,6 +130,7 @@ export default function TransferForm({ isOpen, onClose, onSave }) {
         amount_out: outValidation.value,
         amount_in: inValidation.value,
         conversion_rate: !isSameCurrency && conversionRate ? parseFloat(conversionRate) : null,
+        fee: feeVal > 0 ? feeVal : null,
         description: description.trim(),
         date: new Date(date + 'T12:00:00').toISOString(),
       })
@@ -128,6 +141,10 @@ export default function TransferForm({ isOpen, onClose, onSave }) {
       setLoading(false)
     }
   }
+
+  const feeVal = parseFloat(fee) || 0
+  const amountOutVal = parseFloat(amountOut) || 0
+  const showFeeSummary = feeVal > 0 && amountOutVal > feeVal
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Transferencia entre Billeteras">
@@ -175,6 +192,29 @@ export default function TransferForm({ isOpen, onClose, onSave }) {
               className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               placeholder="0.00"
             />
+          </div>
+
+          {/* Comisión (opcional) */}
+          <div>
+            <label htmlFor="tf-fee" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Comisión {fromWallet ? `(${fromWallet.currency})` : ''} <span className="text-gray-400">(opcional)</span>
+            </label>
+            <input
+              id="tf-fee"
+              type="number"
+              inputMode="decimal"
+              step="0.01"
+              min="0"
+              value={fee}
+              onChange={(e) => setFee(e.target.value)}
+              className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              placeholder="0.00"
+            />
+            {showFeeSummary && (
+              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                Monto efectivo a convertir: {Math.round((amountOutVal - feeVal) * 100) / 100} {fromWallet?.currency}
+              </p>
+            )}
           </div>
 
           {/* Flecha */}
@@ -238,13 +278,14 @@ export default function TransferForm({ isOpen, onClose, onSave }) {
               max={VALIDATION_LIMITS.AMOUNT_MAX_VALUE}
               value={amountIn}
               onChange={(e) => setAmountIn(e.target.value)}
-              disabled={isSameCurrency}
-              className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-50 dark:disabled:bg-gray-600 disabled:text-gray-500 dark:disabled:text-gray-400"
+              className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               placeholder="0.00"
             />
-            {isSameCurrency && (
-              <p className="text-xs text-gray-400 mt-1">Misma moneda: el monto es igual.</p>
-            )}
+            <p className="text-xs text-gray-400 mt-1">
+              {isSameCurrency
+                ? 'Calculado automáticamente. Puedes ajustarlo.'
+                : 'Calculado según tasa y comisión. Puedes ajustarlo.'}
+            </p>
           </div>
 
           {/* Descripcion */}

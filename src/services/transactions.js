@@ -148,6 +148,7 @@ export async function createTransfer({
   amount_out,
   amount_in,
   conversion_rate,
+  fee,
   description,
   date,
 }) {
@@ -197,6 +198,7 @@ export async function createTransfer({
     p_conversion_rate: conversion_rate || null,
     p_amount_usd_out: amountUsdOut,
     p_amount_usd_in: amountUsdIn,
+    p_fee: fee && fee > 0 ? fee : null,
   })
 
   if (error) throw error
