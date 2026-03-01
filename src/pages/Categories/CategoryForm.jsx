@@ -2,23 +2,32 @@ import { useState, useEffect } from 'react'
 import Modal from '../../components/ui/Modal'
 import { validateTextLength, VALIDATION_LIMITS } from '../../utils/validation'
 
-const COLORS = [
-  { hex: '#ef4444', name: 'Rojo' },
-  { hex: '#f97316', name: 'Naranja' },
-  { hex: '#f59e0b', name: 'Ambar' },
-  { hex: '#eab308', name: 'Amarillo' },
-  { hex: '#84cc16', name: 'Lima' },
-  { hex: '#22c55e', name: 'Verde' },
-  { hex: '#10b981', name: 'Esmeralda' },
-  { hex: '#14b8a6', name: 'Turquesa' },
-  { hex: '#06b6d4', name: 'Celeste' },
-  { hex: '#3b82f6', name: 'Azul' },
-  { hex: '#6366f1', name: 'Indigo' },
-  { hex: '#8b5cf6', name: 'Violeta' },
-  { hex: '#a855f7', name: 'Purpura' },
-  { hex: '#d946ef', name: 'Fucsia' },
-  { hex: '#ec4899', name: 'Rosa' },
-  { hex: '#6b7280', name: 'Gris' },
+// Colores agrupados por familia para facilitar la selección visual
+const COLOR_GROUPS = [
+  // Rojos y rosas
+  ['#fca5a5', '#f87171', '#ef4444', '#dc2626', '#b91c1c', '#fda4af', '#fb7185', '#f43f5e', '#e11d48'],
+  // Naranjas
+  ['#fed7aa', '#fdba74', '#fb923c', '#f97316', '#ea580c', '#c2410c', '#9a3412'],
+  // Amarillos y ambar
+  ['#fef08a', '#fde047', '#facc15', '#eab308', '#fcd34d', '#fbbf24', '#f59e0b', '#d97706', '#b45309'],
+  // Lima y verde
+  ['#d9f99d', '#bef264', '#a3e635', '#84cc16', '#65a30d', '#86efac', '#4ade80', '#22c55e', '#16a34a'],
+  // Esmeralda y teal
+  ['#6ee7b7', '#34d399', '#10b981', '#059669', '#047857', '#5eead4', '#2dd4bf', '#14b8a6', '#0d9488'],
+  // Cian y azul cielo
+  ['#a5f3fc', '#67e8f9', '#22d3ee', '#06b6d4', '#0891b2', '#7dd3fc', '#38bdf8', '#0ea5e9', '#0284c7'],
+  // Azul
+  ['#bfdbfe', '#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8', '#1e40af', '#1e3a8a'],
+  // Indigo y violeta
+  ['#c7d2fe', '#a5b4fc', '#818cf8', '#6366f1', '#4f46e5', '#c4b5fd', '#a78bfa', '#8b5cf6', '#7c3aed'],
+  // Purpura y fucsia
+  ['#e9d5ff', '#d8b4fe', '#c084fc', '#a855f7', '#9333ea', '#f5d0fe', '#f0abfc', '#e879f9', '#d946ef'],
+  // Rosa caliente y rojo-rosa
+  ['#fce7f3', '#fbcfe8', '#f9a8d4', '#f472b6', '#ec4899', '#db2777', '#be185d'],
+  // Tierra y marron
+  ['#fef3c7', '#fde68a', '#d97706', '#92400e', '#78350f', '#fecdd3', '#fbbf24', '#a16207', '#713f12'],
+  // Neutros
+  ['#f3f4f6', '#e5e7eb', '#d1d5db', '#9ca3af', '#6b7280', '#4b5563', '#374151', '#1f2937'],
 ]
 
 export default function CategoryForm({ isOpen, onClose, onSave, category = null, defaultType = 'expense' }) {
@@ -135,19 +144,23 @@ export default function CategoryForm({ isOpen, onClose, onSave, category = null,
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Color
           </label>
-          <div className="flex flex-wrap gap-2">
-            {COLORS.map((c) => (
-              <button
-                key={c.hex}
-                type="button"
-                onClick={() => setColor(c.hex)}
-                aria-label={c.name}
-                aria-pressed={color === c.hex}
-                className={`w-8 h-8 rounded-full transition-transform ${
-                  color === c.hex ? 'scale-125 ring-2 ring-offset-2 ring-gray-400 dark:ring-offset-gray-800' : 'hover:scale-110'
-                }`}
-                style={{ backgroundColor: c.hex }}
-              />
+          <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1">
+            {COLOR_GROUPS.map((group, i) => (
+              <div key={i} className="flex flex-wrap gap-1.5">
+                {group.map((hex) => (
+                  <button
+                    key={hex}
+                    type="button"
+                    onClick={() => setColor(hex)}
+                    aria-label={hex}
+                    aria-pressed={color === hex}
+                    className={`w-7 h-7 rounded-full transition-transform shrink-0 ${
+                      color === hex ? 'scale-125 ring-2 ring-offset-2 ring-gray-400 dark:ring-offset-gray-800' : 'hover:scale-110'
+                    }`}
+                    style={{ backgroundColor: hex }}
+                  />
+                ))}
+              </div>
             ))}
           </div>
         </div>
