@@ -170,18 +170,24 @@ export async function createTransfer({
   const txDate = date || new Date().toISOString()
   const desc = description || null
 
-  // Calcular amount_usd para ambas transacciones
-  function calculateAmountUsd(amount, currency, rate) {
-    if (currency === 'USD' || currency === 'USDT') {
-      return parseFloat(amount)
-    } else if (currency === 'VES' && rate && rate > 0) {
-      return Math.round((parseFloat(amount) / rate) * 100) / 100
+  // Calcular amount_usd para ambas transacciones.
+  // El valor USD se deriva del lado que es USD/USDT (siempre exacto), y se
+  // asigna a ambos lados. Esto evita la ambigüedad de dirección de la tasa
+  // (el formulario envía la tasa como "1 origen → destino", no como "1 USD → VES").
+  function resolveTransferUsd(amtOut, currOut, amtIn, currIn) {
+    if (currIn === 'USD' || currIn === 'USDT') {
+      return parseFloat(amtIn)
     }
+    if (currOut === 'USD' || currOut === 'USDT') {
+      return parseFloat(amtOut)
+    }
+    // Ambos en VES (transferencia entre billeteras de la misma moneda)
     return null
   }
 
-  const amountUsdOut = calculateAmountUsd(amount_out, fromWallet.currency, conversion_rate)
-  const amountUsdIn = calculateAmountUsd(amount_in, toWallet.currency, conversion_rate)
+  const resolvedUsd = resolveTransferUsd(amount_out, fromWallet.currency, amount_in, toWallet.currency)
+  const amountUsdOut = resolvedUsd
+  const amountUsdIn = resolvedUsd
 
   // Llamar RPC atómico (stored procedure) — débito, crédito y vinculación
   // se ejecutan en una sola transacción de BD, evitando estados parciales

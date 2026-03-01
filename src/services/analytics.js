@@ -115,6 +115,7 @@ export async function getBalanceEvolution(days = 30) {
   const { data, error } = await supabase
     .from('transactions')
     .select('amount, amount_usd, currency, type, date')
+    .in('type', ['income', 'expense'])
     .gte('date', startDate.toISOString())
     .lte('date', endDate.toISOString())
     .order('date', { ascending: true })
@@ -136,14 +137,15 @@ export async function getBalanceEvolution(days = 30) {
     }
   }
 
-  // Calcular cambios diarios (en USD)
+  // Calcular cambios diarios (en USD) - solo ingresos y gastos.
+  // Las transferencias internas se excluyen porque no cambian el patrimonio total.
   for (const tx of data) {
     const key = tx.date.split('T')[0]
     if (dailyData[key]) {
       const { amountUsd } = getTxAmountUsd(tx, rates)
-      if (tx.type === 'income' || tx.type === 'transfer_in') {
+      if (tx.type === 'income') {
         dailyData[key].change += amountUsd
-      } else if (tx.type === 'expense' || tx.type === 'transfer_out') {
+      } else if (tx.type === 'expense') {
         dailyData[key].change -= amountUsd
       }
     }
