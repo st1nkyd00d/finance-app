@@ -8,8 +8,10 @@ import { fetchCurrentRates } from '../../services/exchangeRates'
 import useCurrencyConvert from '../../hooks/useCurrencyConvert'
 import { getTxAmountUsd, CURRENCY_SYMBOLS, formatAmount } from '../../utils/currency'
 import { HiArrowPath, HiExclamationTriangle, HiCheckCircle } from 'react-icons/hi2'
+import { usePrivacy } from '../../contexts/PrivacyContext'
 
 const DISPLAY_CURRENCIES = ['USD', 'VES', 'USDT']
+const MASK = '••••••'
 
 export default function Dashboard() {
   const [wallets, setWallets] = useState([])
@@ -21,6 +23,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
 
   const { rates, convert, getOldestRateDate, reload: reloadRates } = useCurrencyConvert()
+  const { balancesHidden } = usePrivacy()
 
   const recurringRan = useRef(false)
 
@@ -153,7 +156,7 @@ export default function Dashboard() {
           </div>
         </div>
         <p className="text-4xl font-bold text-gray-900 dark:text-white">
-          {formatAmount(totalBalance)} <span className="text-xl font-normal text-gray-400">{CURRENCY_SYMBOLS[displayCurrency]}</span>
+          {balancesHidden ? MASK : formatAmount(totalBalance)} <span className="text-xl font-normal text-gray-400">{CURRENCY_SYMBOLS[displayCurrency]}</span>
         </p>
 
         {hasConversionError && (
@@ -217,11 +220,11 @@ export default function Dashboard() {
                   </div>
                   <div className="text-right ml-4 shrink-0">
                     <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {formatAmount(balance)} {CURRENCY_SYMBOLS[w.currency]}
+                      {balancesHidden ? MASK : `${formatAmount(balance)} ${CURRENCY_SYMBOLS[w.currency]}`}
                     </p>
                     {w.currency !== displayCurrency && converted !== null && (
                       <p className="text-xs text-gray-400">
-                        ≈ {formatAmount(converted)} {CURRENCY_SYMBOLS[displayCurrency]}
+                        ≈ {balancesHidden ? MASK : `${formatAmount(converted)} ${CURRENCY_SYMBOLS[displayCurrency]}`}
                       </p>
                     )}
                   </div>
@@ -296,13 +299,13 @@ export default function Dashboard() {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5">
           <p className="text-sm text-gray-500 dark:text-gray-400">Ingresos del Mes <span className="text-xs">(USD)</span></p>
           <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">
-            +${formatAmount(monthStats.income)}
+            {balancesHidden ? MASK : `+$${formatAmount(monthStats.income)}`}
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5">
           <p className="text-sm text-gray-500 dark:text-gray-400">Gastos del Mes <span className="text-xs">(USD)</span></p>
           <p className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">
-            -${formatAmount(monthStats.expense)}
+            {balancesHidden ? MASK : `-$${formatAmount(monthStats.expense)}`}
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5">
@@ -312,7 +315,7 @@ export default function Dashboard() {
               ? 'text-green-600 dark:text-green-400'
               : 'text-red-600 dark:text-red-400'
           }`}>
-            {monthStats.income - monthStats.expense >= 0 ? '+' : ''}${formatAmount(monthStats.income - monthStats.expense)}
+            {balancesHidden ? MASK : `${monthStats.income - monthStats.expense >= 0 ? '+' : ''}$${formatAmount(monthStats.income - monthStats.expense)}`}
           </p>
         </div>
       </div>
@@ -355,7 +358,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <span className={`text-sm font-semibold ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                    {isPositive ? '+' : '-'}{formatAmount(tx.amount)} {CURRENCY_SYMBOLS[tx.currency] || tx.currency}
+                    {balancesHidden ? MASK : `${isPositive ? '+' : '-'}${formatAmount(tx.amount)} ${CURRENCY_SYMBOLS[tx.currency] || tx.currency}`}
                   </span>
                 </div>
               )

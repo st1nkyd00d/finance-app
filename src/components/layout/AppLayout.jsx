@@ -1,13 +1,15 @@
 import { useState, useCallback, lazy, Suspense } from 'react'
 import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
-import { HiBars3, HiCalculator } from 'react-icons/hi2'
+import { HiBars3, HiCalculator, HiEye, HiEyeSlash } from 'react-icons/hi2'
+import { usePrivacy } from '../../contexts/PrivacyContext'
 
 const CurrencyCalculator = lazy(() => import('../../pages/ExchangeRates/CurrencyCalculator'))
 
 export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showCalculator, setShowCalculator] = useState(false)
+  const { balancesHidden, togglePrivacy } = usePrivacy()
 
   const handleCloseSidebar = useCallback(() => setSidebarOpen(false), [])
   const handleOpenSidebar = useCallback(() => setSidebarOpen(true), [])
@@ -45,7 +47,13 @@ export default function AppLayout() {
               <HiBars3 className="w-6 h-6" />
             </button>
             <h1 className="text-lg font-bold text-gray-800 dark:text-white">Finance App</h1>
-            <div className="w-10" /> {/* Spacer para centrar título */}
+            <button
+              onClick={togglePrivacy}
+              className="p-2 -mr-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+              title={balancesHidden ? 'Mostrar balances' : 'Ocultar balances'}
+            >
+              {balancesHidden ? <HiEyeSlash className="w-5 h-5" /> : <HiEye className="w-5 h-5" />}
+            </button>
           </div>
         </header>
 
@@ -54,6 +62,15 @@ export default function AppLayout() {
           <Outlet />
         </div>
       </main>
+
+      {/* Botón flotante: ocultar balances (desktop) */}
+      <button
+        onClick={togglePrivacy}
+        className="fixed bottom-24 right-6 w-12 h-12 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-full shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center z-50 lg:flex hidden"
+        title={balancesHidden ? 'Mostrar balances' : 'Ocultar balances'}
+      >
+        {balancesHidden ? <HiEyeSlash className="w-5 h-5" /> : <HiEye className="w-5 h-5" />}
+      </button>
 
       {/* Botón flotante de calculadora */}
       <button

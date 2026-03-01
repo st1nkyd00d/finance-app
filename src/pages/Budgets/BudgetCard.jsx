@@ -1,6 +1,7 @@
 import { memo } from 'react'
 import { formatAmount } from '../../utils/currency'
 import { HiEye, HiEyeSlash, HiPencilSquare, HiTrash } from 'react-icons/hi2'
+import { usePrivacy } from '../../contexts/PrivacyContext'
 
 const PERIOD_LABELS = {
   weekly: 'Semanal',
@@ -41,6 +42,8 @@ export default memo(function BudgetCard({ budget, onEdit, onDelete, onToggle }) 
   }
 
   const colors = statusColors[status] || statusColors.normal
+  const { balancesHidden } = usePrivacy()
+  const mask = '••••••'
 
   return (
     <div
@@ -104,10 +107,10 @@ export default memo(function BudgetCard({ budget, onEdit, onDelete, onToggle }) 
       {/* Montos */}
       <div className="flex items-baseline justify-between mb-2">
         <span className={`text-2xl font-bold ${colors.text}`}>
-          ${formatAmount(spent)}
+          {balancesHidden ? mask : `$${formatAmount(spent)}`}
         </span>
         <span className="text-gray-400 dark:text-gray-500">
-          de ${formatAmount(amount)} USD
+          de {balancesHidden ? mask : `$${formatAmount(amount)} USD`}
         </span>
       </div>
 

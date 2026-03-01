@@ -1,5 +1,6 @@
 import { memo } from 'react'
 import { CURRENCY_SYMBOLS, formatAmount } from '../../utils/currency'
+import { usePrivacy } from '../../contexts/PrivacyContext'
 
 const CURRENCY_COLORS = {
   VES: 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300',
@@ -8,6 +9,8 @@ const CURRENCY_COLORS = {
 }
 
 export default memo(function WalletCard({ wallet, onEdit, onDelete }) {
+  const { balancesHidden } = usePrivacy()
+  const mask = '••••••'
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5 flex items-center justify-between">
       <div className="flex items-center gap-4">
@@ -18,7 +21,7 @@ export default memo(function WalletCard({ wallet, onEdit, onDelete }) {
           <div className="flex flex-wrap items-center gap-3">
             <h3 className="font-medium text-gray-900 dark:text-white">{wallet.name}</h3>
             <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-              {formatAmount(wallet.balance)} {CURRENCY_SYMBOLS[wallet.currency] || wallet.currency}
+              {balancesHidden ? mask : formatAmount(wallet.balance)} {CURRENCY_SYMBOLS[wallet.currency] || wallet.currency}
             </span>
           </div>
           <div className="flex items-center gap-2 mt-0.5">

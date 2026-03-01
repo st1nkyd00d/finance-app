@@ -2,6 +2,7 @@ import { memo } from 'react'
 import { formatFrequency } from '../../services/recurring'
 import { CURRENCY_SYMBOLS, formatAmount } from '../../utils/currency'
 import { HiPause, HiPlay, HiPencilSquare, HiTrash } from 'react-icons/hi2'
+import { usePrivacy } from '../../contexts/PrivacyContext'
 
 export default memo(function RecurringCard({ recurring, onEdit, onDelete, onToggle }) {
   const {
@@ -18,6 +19,7 @@ export default memo(function RecurringCard({ recurring, onEdit, onDelete, onTogg
   } = recurring
 
   const isIncome = type === 'income'
+  const { balancesHidden } = usePrivacy()
 
   function formatDate(dateStr) {
     if (!dateStr) return null
@@ -101,7 +103,7 @@ export default memo(function RecurringCard({ recurring, onEdit, onDelete, onTogg
       {/* Amount and Frequency */}
       <div className="flex items-baseline justify-between mb-3">
         <span className={`text-2xl font-bold ${isIncome ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-          {isIncome ? '+' : '-'}{formatAmount(amount)} {CURRENCY_SYMBOLS[wallet?.currency] || wallet?.currency}
+          {balancesHidden ? '••••••' : `${isIncome ? '+' : '-'}${formatAmount(amount)} ${CURRENCY_SYMBOLS[wallet?.currency] || wallet?.currency}`}
         </span>
         <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">
           {formatFrequency(frequency)}

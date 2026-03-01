@@ -1,6 +1,7 @@
 import { memo } from 'react'
 import { CURRENCY_SYMBOLS, formatAmount } from '../../utils/currency'
 import { HiArrowsRightLeft, HiTrash } from 'react-icons/hi2'
+import { usePrivacy } from '../../contexts/PrivacyContext'
 
 export default memo(function TransactionItem({ transaction, onDelete }) {
   const isIncome = transaction.type === 'income'
@@ -16,6 +17,7 @@ export default memo(function TransactionItem({ transaction, onDelete }) {
   })
 
   const symbol = CURRENCY_SYMBOLS[transaction.currency] || transaction.currency
+  const { balancesHidden } = usePrivacy()
 
   return (
     <div className="flex items-center justify-between py-3 px-4">
@@ -82,7 +84,7 @@ export default memo(function TransactionItem({ transaction, onDelete }) {
             ? (isPositive ? 'text-cyan-600 dark:text-cyan-400' : 'text-blue-600 dark:text-blue-400')
             : (isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')
         }`}>
-          {isPositive ? '+' : '-'}{formatAmount(transaction.amount)} {symbol}
+          {balancesHidden ? '••••••' : `${isPositive ? '+' : '-'}${formatAmount(transaction.amount)} ${symbol}`}
         </span>
 
         {/* Solo mostrar boton eliminar en transfer_out (elimina ambas) o en income/expense */}

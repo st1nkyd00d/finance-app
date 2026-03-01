@@ -1,6 +1,7 @@
 import { memo } from 'react'
 import { HiPencil, HiTrash, HiCheck, HiXMark, HiCalendar } from 'react-icons/hi2'
 import { formatAmount } from '../../utils/currency'
+import { usePrivacy } from '../../contexts/PrivacyContext'
 
 export default memo(function GoalCard({ goal, onEdit, onDelete, onToggleActive }) {
   const {
@@ -29,6 +30,9 @@ export default memo(function GoalCard({ goal, onEdit, onDelete, onToggleActive }
     warning: { text: 'Cerca del objetivo', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' },
     completed: { text: 'Completada', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
   }[status]
+
+  const { balancesHidden } = usePrivacy()
+  const mask = '••••••'
 
   // Days remaining display
   const daysDisplay = (() => {
@@ -67,10 +71,10 @@ export default memo(function GoalCard({ goal, onEdit, onDelete, onToggleActive }
       <div className="mb-4">
         <div className="flex justify-between items-baseline mb-2">
           <span className="font-bold text-2xl text-gray-900 dark:text-white">
-            ${formatAmount(current)}
+            {balancesHidden ? mask : `$${formatAmount(current)}`}
           </span>
           <span className="text-gray-600 text-sm dark:text-gray-400">
-            de ${formatAmount(target_amount)}
+            de {balancesHidden ? mask : `$${formatAmount(target_amount)}`}
           </span>
         </div>
 

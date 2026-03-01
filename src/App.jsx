@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { ToastProvider } from './contexts/ToastContext'
+import { PrivacyProvider } from './contexts/PrivacyContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import PublicRoute from './components/PublicRoute'
 import AppLayout from './components/layout/AppLayout'
@@ -37,6 +38,7 @@ function App() {
   return (
     <BrowserRouter>
       <ThemeProvider>
+        <PrivacyProvider>
         <ToastProvider>
           <AuthProvider>
             <PWAPrompt />
@@ -66,6 +68,7 @@ function App() {
             </Suspense>
           </AuthProvider>
         </ToastProvider>
+        </PrivacyProvider>
       </ThemeProvider>
     </BrowserRouter>
   )
