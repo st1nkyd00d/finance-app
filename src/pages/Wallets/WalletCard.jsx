@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { CURRENCY_SYMBOLS, formatAmount } from '../../utils/currency'
 
 const CURRENCY_COLORS = {
@@ -6,7 +7,7 @@ const CURRENCY_COLORS = {
   USDT: 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300',
 }
 
-export default function WalletCard({ wallet, onEdit, onDelete }) {
+export default memo(function WalletCard({ wallet, onEdit, onDelete }) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5 flex items-center justify-between">
       <div className="flex items-center gap-4">
@@ -55,4 +56,4 @@ export default function WalletCard({ wallet, onEdit, onDelete }) {
       </div>
     </div>
   )
-}
+})

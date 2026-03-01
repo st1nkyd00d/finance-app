@@ -1,8 +1,9 @@
+import { memo } from 'react'
 import { formatFrequency } from '../../services/recurring'
 import { CURRENCY_SYMBOLS, formatAmount } from '../../utils/currency'
 import { HiPause, HiPlay, HiPencilSquare, HiTrash } from 'react-icons/hi2'
 
-export default function RecurringCard({ recurring, onEdit, onDelete, onToggle }) {
+export default memo(function RecurringCard({ recurring, onEdit, onDelete, onToggle }) {
   const {
     category,
     wallet,
@@ -124,4 +125,4 @@ export default function RecurringCard({ recurring, onEdit, onDelete, onToggle })
       </div>
     </div>
   )
-}
+})

@@ -136,6 +136,10 @@ export default function Transactions() {
     }
   }
 
+  const handleCloseForm = useCallback(() => setShowForm(false), [])
+  const handleCloseTransfer = useCallback(() => setShowTransfer(false), [])
+  const handleCloseDelete = useCallback(() => setDeletingTx(null), [])
+
   const totalPages = Math.ceil(totalCount / PAGE_SIZE)
 
   return (
@@ -244,21 +248,21 @@ export default function Transactions() {
       {/* Modal nueva transaccion */}
       <TransactionForm
         isOpen={showForm}
-        onClose={() => setShowForm(false)}
+        onClose={handleCloseForm}
         onSave={handleCreate}
       />
 
       {/* Modal transferencia */}
       <TransferForm
         isOpen={showTransfer}
-        onClose={() => setShowTransfer(false)}
+        onClose={handleCloseTransfer}
         onSave={handleTransfer}
       />
 
       {/* Dialog confirmar eliminacion */}
       <ConfirmDialog
         isOpen={!!deletingTx}
-        onClose={() => setDeletingTx(null)}
+        onClose={handleCloseDelete}
         onConfirm={handleConfirmDelete}
         title={deletingTx?.linked_transaction_id ? 'Eliminar Transferencia' : 'Eliminar Transaccion'}
         message={

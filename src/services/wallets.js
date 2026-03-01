@@ -2,17 +2,12 @@ import { supabase } from './supabase'
 import { getAuthenticatedUser } from '../utils/auth'
 
 export async function fetchWallets() {
-  const { data, error } = await supabase
-    .from('wallets')
-    .select('*')
-    .order('created_at', { ascending: true })
+  const [{ data, error }, { data: balances, error: balError }] = await Promise.all([
+    supabase.from('wallets').select('*').order('created_at', { ascending: true }),
+    supabase.from('wallet_balances').select('id, balance'),
+  ])
 
   if (error) throw error
-
-  // Traer balances calculados de la vista
-  const { data: balances, error: balError } = await supabase
-    .from('wallet_balances')
-    .select('id, balance')
 
   if (!balError && balances) {
     const balanceMap = Object.fromEntries(balances.map((b) => [b.id, b.balance]))

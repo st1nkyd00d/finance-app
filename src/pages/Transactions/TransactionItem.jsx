@@ -1,7 +1,8 @@
+import { memo } from 'react'
 import { CURRENCY_SYMBOLS, formatAmount } from '../../utils/currency'
 import { HiArrowsRightLeft, HiTrash } from 'react-icons/hi2'
 
-export default function TransactionItem({ transaction, onDelete }) {
+export default memo(function TransactionItem({ transaction, onDelete }) {
   const isIncome = transaction.type === 'income'
   const isTransferIn = transaction.type === 'transfer_in'
   const isTransferOut = transaction.type === 'transfer_out'
@@ -97,4 +98,4 @@ export default function TransactionItem({ transaction, onDelete }) {
       </div>
     </div>
   )
-}
+})

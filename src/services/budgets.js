@@ -147,45 +147,72 @@ export async function fetchBudgetsWithSpending() {
     fetchCurrentRates(),
   ])
 
-  const budgetsWithSpending = await Promise.all(
-    budgets.map(async (budget) => {
-      const { periodStart, periodEnd } = getCurrentPeriodRange(
-        budget.period,
-        budget.start_date
-      )
+  if (budgets.length === 0) return []
 
-      const { total: spent, hasConversionError } = await getCategorySpendingInUSD(
-        budget.category_id,
-        periodStart,
-        periodEnd,
-        rates
-      )
+  // Calcular periodos de cada budget
+  const budgetPeriods = budgets.map((budget) => ({
+    budget,
+    ...getCurrentPeriodRange(budget.period, budget.start_date),
+  }))
 
-      const percentage = budget.amount > 0
-        ? Math.round((spent / budget.amount) * 100)
-        : 0
+  // Una sola query para todas las transacciones relevantes
+  const allCategoryIds = [...new Set(budgets.map((b) => b.category_id))]
+  const minDate = new Date(Math.min(...budgetPeriods.map((bp) => bp.periodStart)))
+  const maxDate = new Date(Math.max(...budgetPeriods.map((bp) => bp.periodEnd)))
 
-      const daysRemaining = getDaysRemaining(periodEnd)
+  const { data: allTx, error: txError } = await supabase
+    .from('transactions')
+    .select('amount, currency, category_id, date')
+    .eq('type', 'expense')
+    .in('category_id', allCategoryIds)
+    .gte('date', minDate.toISOString())
+    .lte('date', maxDate.toISOString())
 
-      let status = 'normal'
-      if (percentage >= 100) {
-        status = 'exceeded'
-      } else if (percentage >= 70) {
-        status = 'warning'
-      }
+  if (txError) throw txError
 
-      return {
-        ...budget,
-        spent,
-        percentage,
-        daysRemaining,
-        status,
-        periodStart,
-        periodEnd,
-        hasConversionError,
-      }
+  // Calcular gasto por budget filtrando en JS
+  const budgetsWithSpending = budgetPeriods.map(({ budget, periodStart, periodEnd }) => {
+    const txForBudget = (allTx || []).filter((tx) => {
+      if (tx.category_id !== budget.category_id) return false
+      const txDate = new Date(tx.date)
+      return txDate >= periodStart && txDate <= periodEnd
     })
-  )
+
+    let spent = 0
+    let hasConversionError = false
+    for (const tx of txForBudget) {
+      const amountUSD = convertToUSD(parseFloat(tx.amount), tx.currency, rates)
+      if (amountUSD !== null) {
+        spent += amountUSD
+      } else {
+        hasConversionError = true
+      }
+    }
+
+    const percentage = budget.amount > 0
+      ? Math.round((spent / budget.amount) * 100)
+      : 0
+
+    const daysRemaining = getDaysRemaining(periodEnd)
+
+    let status = 'normal'
+    if (percentage >= 100) {
+      status = 'exceeded'
+    } else if (percentage >= 70) {
+      status = 'warning'
+    }
+
+    return {
+      ...budget,
+      spent,
+      percentage,
+      daysRemaining,
+      status,
+      periodStart,
+      periodEnd,
+      hasConversionError,
+    }
+  })
 
   return budgetsWithSpending
 }

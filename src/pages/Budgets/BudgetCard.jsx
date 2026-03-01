@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { formatAmount } from '../../utils/currency'
 import { HiEye, HiEyeSlash, HiPencilSquare, HiTrash } from 'react-icons/hi2'
 
@@ -7,7 +8,7 @@ const PERIOD_LABELS = {
   yearly: 'Anual',
 }
 
-export default function BudgetCard({ budget, onEdit, onDelete, onToggle }) {
+export default memo(function BudgetCard({ budget, onEdit, onDelete, onToggle }) {
   const {
     category,
     amount,
@@ -150,4 +151,4 @@ export default function BudgetCard({ budget, onEdit, onDelete, onToggle }) {
       </div>
     </div>
   )
-}
+})

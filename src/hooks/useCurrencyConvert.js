@@ -21,7 +21,7 @@ export default function useCurrencyConvert() {
   }, [])
 
   // Buscar tasa usando normalización
-  function getRate(from, to) {
+  const getRate = useCallback((from, to) => {
     if (from === to) return 1
 
     // Normalizar búsqueda
@@ -46,20 +46,20 @@ export default function useCurrencyConvert() {
     }
 
     return null
-  }
+  }, [rates])
 
-  function convert(amount, from, to) {
+  const convert = useCallback((amount, from, to) => {
     const rate = getRate(from, to)
     if (rate === null) return null
     return amount * rate
-  }
+  }, [getRate])
 
   // Obtener la tasa mas vieja entre las actuales (para saber frescura)
-  function getOldestRateDate() {
+  const getOldestRateDate = useCallback(() => {
     if (rates.length === 0) return null
     const dates = rates.map((r) => new Date(r.created_at))
     return new Date(Math.min(...dates))
-  }
+  }, [rates])
 
   return { rates, loading, convert, getRate, getOldestRateDate, reload }
 }

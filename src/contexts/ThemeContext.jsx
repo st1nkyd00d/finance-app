@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useCallback, useContext, useState, useEffect, useMemo } from 'react'
 
 const ThemeContext = createContext(null)
 
@@ -53,26 +53,30 @@ export function ThemeProvider({ children }) {
     return () => mediaQuery.removeEventListener('change', handleChange)
   }, [])
 
-  function toggleTheme() {
+  const toggleTheme = useCallback(() => {
     setTheme((prev) => {
       const next = prev === 'light' ? 'dark' : 'light'
       localStorage.setItem('theme', next)
       return next
     })
-  }
+  }, [])
 
-  function setLightTheme() {
+  const setLightTheme = useCallback(() => {
     localStorage.setItem('theme', 'light')
     setTheme('light')
-  }
+  }, [])
 
-  function setDarkTheme() {
+  const setDarkTheme = useCallback(() => {
     localStorage.setItem('theme', 'dark')
     setTheme('dark')
-  }
+  }, [])
+
+  const value = useMemo(() => ({
+    theme, toggleTheme, setLightTheme, setDarkTheme,
+  }), [theme, toggleTheme, setLightTheme, setDarkTheme])
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setLightTheme, setDarkTheme }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   )

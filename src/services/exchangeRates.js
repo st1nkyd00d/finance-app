@@ -1,7 +1,15 @@
 import { supabase } from './supabase'
 import { getAuthenticatedUser } from '../utils/auth'
 
+let _ratesCache = null
+let _ratesCacheTime = 0
+const RATES_TTL = 60_000 // 60s
+
 export async function fetchCurrentRates() {
+  if (_ratesCache && Date.now() - _ratesCacheTime < RATES_TTL) {
+    return _ratesCache
+  }
+
   const { data, error } = await supabase
     .from('exchange_rates')
     .select('*')
@@ -9,7 +17,14 @@ export async function fetchCurrentRates() {
     .order('created_at', { ascending: false })
 
   if (error) throw error
+  _ratesCache = data
+  _ratesCacheTime = Date.now()
   return data
+}
+
+export function invalidateRatesCache() {
+  _ratesCache = null
+  _ratesCacheTime = 0
 }
 
 export async function fetchRateHistory(fromCurrency, toCurrency) {
@@ -70,6 +85,7 @@ export async function setRate({ from_currency, to_currency, rate, source = 'manu
     .single()
 
   if (error) throw error
+  invalidateRatesCache()
   return data
 }
 
@@ -154,5 +170,6 @@ export async function deleteRate(rateId) {
     .eq('user_id', user.id)
 
   if (error) throw error
+  invalidateRatesCache()
 }
 

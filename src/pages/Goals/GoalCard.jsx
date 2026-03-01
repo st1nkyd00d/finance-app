@@ -1,7 +1,8 @@
+import { memo } from 'react'
 import { HiPencil, HiTrash, HiCheck, HiXMark, HiCalendar } from 'react-icons/hi2'
 import { formatAmount } from '../../utils/currency'
 
-export default function GoalCard({ goal, onEdit, onDelete, onToggleActive }) {
+export default memo(function GoalCard({ goal, onEdit, onDelete, onToggleActive }) {
   const {
     id,
     name,
@@ -30,7 +31,7 @@ export default function GoalCard({ goal, onEdit, onDelete, onToggleActive }) {
   }[status]
 
   // Days remaining display
-  const daysDisplay = () => {
+  const daysDisplay = (() => {
     if (!deadline) return null
     if (daysRemaining === null) return null
     if (daysRemaining < 0) return <span className="text-red-600 dark:text-red-400">Vencida</span>
@@ -40,7 +41,7 @@ export default function GoalCard({ goal, onEdit, onDelete, onToggleActive }) {
         {daysRemaining} {daysRemaining === 1 ? 'día' : 'días'}
       </span>
     )
-  }
+  })()
 
   return (
     <div className={`bg-white dark:bg-gray-800 rounded-lg shadow p-6 ${!is_active ? 'opacity-60' : ''}`}>
@@ -99,10 +100,10 @@ export default function GoalCard({ goal, onEdit, onDelete, onToggleActive }) {
           <HiCalendar className="w-4 h-4 text-gray-500 dark:text-gray-400" />
           <span className="text-gray-600 dark:text-gray-400">Fecha límite:</span>
           <span className="font-medium dark:text-gray-400">{new Date(deadline).toLocaleDateString('es-VE')}</span>
-          {daysDisplay() && (
+          {daysDisplay && (
             <>
               <span className="text-gray-400">•</span>
-              {daysDisplay()}
+              {daysDisplay}
             </>
           )}
         </div>
@@ -151,4 +152,4 @@ export default function GoalCard({ goal, onEdit, onDelete, onToggleActive }) {
       </div>
     </div>
   )
-}
+})

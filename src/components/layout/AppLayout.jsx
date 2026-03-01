@@ -1,12 +1,18 @@
-import { useState } from 'react'
+import { useState, useCallback, lazy, Suspense } from 'react'
 import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
-import CurrencyCalculator from '../../pages/ExchangeRates/CurrencyCalculator'
 import { HiBars3, HiCalculator } from 'react-icons/hi2'
+
+const CurrencyCalculator = lazy(() => import('../../pages/ExchangeRates/CurrencyCalculator'))
 
 export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showCalculator, setShowCalculator] = useState(false)
+
+  const handleCloseSidebar = useCallback(() => setSidebarOpen(false), [])
+  const handleOpenSidebar = useCallback(() => setSidebarOpen(true), [])
+  const handleOpenCalculator = useCallback(() => setShowCalculator(true), [])
+  const handleCloseCalculator = useCallback(() => setShowCalculator(false), [])
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -14,7 +20,7 @@ export default function AppLayout() {
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
+          onClick={handleCloseSidebar}
         />
       )}
 
@@ -24,7 +30,7 @@ export default function AppLayout() {
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } lg:block`}
       >
-        <Sidebar onClose={() => setSidebarOpen(false)} />
+        <Sidebar onClose={handleCloseSidebar} />
       </div>
 
       {/* Main content */}
@@ -33,7 +39,7 @@ export default function AppLayout() {
         <header className="sticky top-0 z-30 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 lg:hidden">
           <div className="flex items-center justify-between">
             <button
-              onClick={() => setSidebarOpen(true)}
+              onClick={handleOpenSidebar}
               className="p-2 -ml-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
             >
               <HiBars3 className="w-6 h-6" />
@@ -51,18 +57,22 @@ export default function AppLayout() {
 
       {/* Botón flotante de calculadora */}
       <button
-        onClick={() => setShowCalculator(true)}
+        onClick={handleOpenCalculator}
         className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center z-50 group"
         title="Calculadora de conversión"
       >
         <HiCalculator className="w-6 h-6 group-hover:scale-110 transition-transform" />
       </button>
 
-      {/* Modal de calculadora */}
-      <CurrencyCalculator
-        isOpen={showCalculator}
-        onClose={() => setShowCalculator(false)}
-      />
+      {/* Modal de calculadora (lazy loaded) */}
+      {showCalculator && (
+        <Suspense fallback={null}>
+          <CurrencyCalculator
+            isOpen={showCalculator}
+            onClose={handleCloseCalculator}
+          />
+        </Suspense>
+      )}
     </div>
   )
 }

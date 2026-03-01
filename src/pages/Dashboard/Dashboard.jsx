@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { fetchWallets } from '../../services/wallets'
 import { fetchTransactions } from '../../services/transactions'
@@ -78,23 +78,27 @@ export default function Dashboard() {
   }, [])
 
   // Calcular balance total convertido
-  const includedWallets = wallets.filter((w) => w.include_in_total)
-  let totalBalance = 0
-  let hasConversionError = false
+  const { totalBalance, hasConversionError, includedWallets } = useMemo(() => {
+    const included = wallets.filter((w) => w.include_in_total)
+    let total = 0
+    let convError = false
 
-  for (const w of includedWallets) {
-    const balance = parseFloat(w.balance || 0)
-    if (w.currency === displayCurrency) {
-      totalBalance += balance
-    } else {
-      const converted = convert(balance, w.currency, displayCurrency)
-      if (converted !== null) {
-        totalBalance += converted
+    for (const w of included) {
+      const balance = parseFloat(w.balance || 0)
+      if (w.currency === displayCurrency) {
+        total += balance
       } else {
-        hasConversionError = true
+        const converted = convert(balance, w.currency, displayCurrency)
+        if (converted !== null) {
+          total += converted
+        } else {
+          convError = true
+        }
       }
     }
-  }
+
+    return { totalBalance: total, hasConversionError: convError, includedWallets: included }
+  }, [wallets, displayCurrency, convert])
 
   // Frescura de tasas
   const oldestDate = getOldestRateDate()

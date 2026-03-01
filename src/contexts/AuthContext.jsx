@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../services/supabase'
 
 const AuthContext = createContext(null)
@@ -30,44 +30,44 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  async function signUp(email, password) {
+  const signUp = useCallback(async (email, password) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
     })
     if (error) throw error
     return data
-  }
+  }, [])
 
-  async function signIn(email, password) {
+  const signIn = useCallback(async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
     if (error) throw error
     return data
-  }
+  }, [])
 
-  async function signOut() {
+  const signOut = useCallback(async () => {
     const { error } = await supabase.auth.signOut()
     if (error) throw error
-  }
+  }, [])
 
-  async function resetPassword(email) {
+  const resetPassword = useCallback(async (email) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     })
     if (error) throw error
-  }
+  }, [])
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     loading,
     signUp,
     signIn,
     signOut,
     resetPassword,
-  }
+  }), [user, loading, signUp, signIn, signOut, resetPassword])
 
   return (
     <AuthContext.Provider value={value}>

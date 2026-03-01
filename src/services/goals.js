@@ -204,25 +204,60 @@ export function getGoalStatus(percentage) {
  * This is the main function to use in the UI
  */
 export async function fetchGoalsWithProgress() {
+  const user = await getAuthenticatedUser()
   const goals = await fetchGoals()
 
-  const goalsWithProgress = await Promise.all(
-    goals.map(async (goal) => {
-      const { current, hasConversionError } = await calculateGoalProgress(goal.id)
-      const percentage = getProgressPercentage(current, goal.target_amount)
-      const daysRemaining = getDaysRemaining(goal.deadline)
-      const status = getGoalStatus(percentage)
+  if (goals.length === 0) return []
 
-      return {
-        ...goal,
-        current,
-        percentage,
-        daysRemaining,
-        status,
-        hasConversionError,
+  // Una sola query para todas las transacciones de savings
+  const goalIds = goals.map((g) => g.id)
+  const { data: allTx, error } = await supabase
+    .from('transactions')
+    .select('amount, amount_usd, goal_id, wallet:wallets(currency)')
+    .eq('user_id', user.id)
+    .in('goal_id', goalIds)
+    .eq('type', 'savings')
+
+  if (error) throw error
+
+  // Agrupar transacciones por goal_id
+  const txByGoal = {}
+  for (const tx of allTx || []) {
+    if (!txByGoal[tx.goal_id]) txByGoal[tx.goal_id] = []
+    txByGoal[tx.goal_id].push(tx)
+  }
+
+  const goalsWithProgress = goals.map((goal) => {
+    const goalTx = txByGoal[goal.id] || []
+    let current = 0
+    let hasConversionError = false
+
+    for (const tx of goalTx) {
+      if (tx.amount_usd) {
+        current += parseFloat(tx.amount_usd)
+      } else {
+        const currency = tx.wallet?.currency
+        if (currency === 'USD' || currency === 'USDT') {
+          current += parseFloat(tx.amount)
+        } else {
+          hasConversionError = true
+        }
       }
-    })
-  )
+    }
+
+    const percentage = getProgressPercentage(current, goal.target_amount)
+    const daysRemaining = getDaysRemaining(goal.deadline)
+    const status = getGoalStatus(percentage)
+
+    return {
+      ...goal,
+      current,
+      percentage,
+      daysRemaining,
+      status,
+      hasConversionError,
+    }
+  })
 
   return goalsWithProgress
 }

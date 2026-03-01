@@ -56,16 +56,16 @@ export default function Goals() {
     setEditingGoal(null)
   }, [])
 
-  const handleSave = async (data) => {
+  const handleSave = useCallback(async (data) => {
     if (editingGoal) {
       await updateGoal(editingGoal.id, data)
     } else {
       await createGoal(data)
     }
     await loadGoals()
-  }
+  }, [editingGoal, loadGoals])
 
-  const handleToggleActive = async (id, isActive) => {
+  const handleToggleActive = useCallback(async (id, isActive) => {
     try {
       await updateGoal(id, { is_active: isActive })
       await loadGoals()
@@ -73,7 +73,7 @@ export default function Goals() {
       console.error('Error toggling goal:', err)
       setError(err.message || 'Error al actualizar la meta')
     }
-  }
+  }, [loadGoals])
 
   const openDeleteConfirm = useCallback((id, name) => {
     setDeleteConfirm({ isOpen: true, id, name })

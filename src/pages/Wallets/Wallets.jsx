@@ -46,15 +46,15 @@ export default function Wallets() {
     toast.success('Billetera actualizada')
   }
 
-  function handleEditClick(wallet) {
+  const handleEditClick = useCallback((wallet) => {
     setEditingWallet(wallet)
     setShowForm(true)
-  }
+  }, [])
 
-  function handleDeleteClick(wallet) {
+  const handleDeleteClick = useCallback((wallet) => {
     setDeleteError('')
     setDeletingWallet(wallet)
-  }
+  }, [])
 
   async function handleConfirmDelete() {
     setDeleteLoading(true)
@@ -72,15 +72,17 @@ export default function Wallets() {
     }
   }
 
-  function handleCloseForm() {
+  const handleCloseForm = useCallback(() => {
     setShowForm(false)
     setEditingWallet(null)
-  }
+  }, [])
 
-  function handleOpenCreate() {
+  const handleOpenCreate = useCallback(() => {
     setEditingWallet(null)
     setShowForm(true)
-  }
+  }, [])
+
+  const handleCloseDelete = useCallback(() => setDeletingWallet(null), [])
 
   if (loading) {
     return (
@@ -145,7 +147,7 @@ export default function Wallets() {
       {/* Dialog confirmar eliminacion */}
       <ConfirmDialog
         isOpen={!!deletingWallet}
-        onClose={() => setDeletingWallet(null)}
+        onClose={handleCloseDelete}
         onConfirm={handleConfirmDelete}
         title="Eliminar Billetera"
         message={
