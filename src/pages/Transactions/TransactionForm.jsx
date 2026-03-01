@@ -7,7 +7,7 @@ import { getCurrentRate, fetchBinanceRate, fetchBCVRate } from '../../services/e
 import { validateAmount, formatAmountInput, VALIDATION_LIMITS } from '../../utils/validation'
 import { formatAmount } from '../../utils/currency'
 
-export default function TransactionForm({ isOpen, onClose, onSave }) {
+export default function TransactionForm({ isOpen, onClose, onSave, editingTx = null }) {
   const [type, setType] = useState('expense')
   const [amount, setAmount] = useState('')
   const [walletId, setWalletId] = useState('')
@@ -35,17 +35,34 @@ export default function TransactionForm({ isOpen, onClose, onSave }) {
           setWallets(w)
           setCategories(c)
           setGoals(g.filter(goal => goal.is_active))
-          if (w.length > 0 && !walletId) setWalletId(w[0].id)
+          if (!editingTx && w.length > 0) setWalletId(w[0].id)
         })
         .catch((err) => console.error('Error cargando datos del formulario:', err))
 
-      setAmount('')
-      setDescription('')
-      setDate(new Date().toISOString().split('T')[0])
+      if (editingTx) {
+        setType(editingTx.type)
+        setAmount(String(editingTx.amount))
+        setWalletId(editingTx.wallet_id)
+        setCategoryId(editingTx.category_id || '')
+        setGoalId(editingTx.goal_id || '')
+        setDescription(editingTx.description || '')
+        setDate(editingTx.date.split('T')[0])
+        if (editingTx.exchange_rate) {
+          setExchangeRate(editingTx.exchange_rate)
+          setRateType('libre')
+        } else {
+          setExchangeRate(null)
+          setRateType('binance')
+        }
+      } else {
+        setAmount('')
+        setDescription('')
+        setDate(new Date().toISOString().split('T')[0])
+        setGoalId('')
+        setExchangeRate(null)
+        setRateType('binance')
+      }
       setError('')
-      setGoalId('')
-      setExchangeRate(null)
-      setRateType('binance')
       setRateError('')
     }
   }, [isOpen])
@@ -179,7 +196,7 @@ export default function TransactionForm({ isOpen, onClose, onSave }) {
     : null
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Nueva Transacción">
+    <Modal isOpen={isOpen} onClose={onClose} title={editingTx ? 'Editar Transacción' : 'Nueva Transacción'}>
       {error && (
         <div role="alert" className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-sm">
           {error}
@@ -481,7 +498,7 @@ export default function TransactionForm({ isOpen, onClose, onSave }) {
             }
             className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
           >
-            {loading ? 'Guardando...' : 'Guardar'}
+            {loading ? 'Guardando...' : editingTx ? 'Guardar cambios' : 'Guardar'}
           </button>
         </div>
       </form>

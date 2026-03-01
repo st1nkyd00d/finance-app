@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { fetchTransactions, createTransaction, createTransfer, deleteTransaction } from '../../services/transactions'
+import { fetchTransactions, createTransaction, createTransfer, deleteTransaction, updateTransaction } from '../../services/transactions'
 import { useToast } from '../../contexts/ToastContext'
 import TransactionItem from './TransactionItem'
 import TransactionForm from './TransactionForm'
@@ -61,6 +61,7 @@ export default function Transactions() {
 
   const [showForm, setShowForm] = useState(false)
   const [showTransfer, setShowTransfer] = useState(false)
+  const [editingTx, setEditingTx] = useState(null)
   const [deletingTx, setDeletingTx] = useState(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
 
@@ -115,6 +116,12 @@ export default function Transactions() {
     toast.success('Transaccion creada exitosamente')
   }
 
+  async function handleUpdate(data) {
+    await updateTransaction(editingTx.id, data)
+    await loadTransactions(page, filters)
+    toast.success('Transaccion actualizada')
+  }
+
   async function handleTransfer(data) {
     await createTransfer(data)
     setPage(0)
@@ -138,6 +145,7 @@ export default function Transactions() {
 
   const handleCloseForm = useCallback(() => setShowForm(false), [])
   const handleCloseTransfer = useCallback(() => setShowTransfer(false), [])
+  const handleCloseEdit = useCallback(() => setEditingTx(null), [])
   const handleCloseDelete = useCallback(() => setDeletingTx(null), [])
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE)
@@ -216,6 +224,7 @@ export default function Transactions() {
                 key={tx.id}
                 transaction={tx}
                 onDelete={setDeletingTx}
+                onEdit={setEditingTx}
               />
             ))}
           </div>
@@ -250,6 +259,14 @@ export default function Transactions() {
         isOpen={showForm}
         onClose={handleCloseForm}
         onSave={handleCreate}
+      />
+
+      {/* Modal editar transaccion */}
+      <TransactionForm
+        isOpen={!!editingTx}
+        onClose={handleCloseEdit}
+        onSave={handleUpdate}
+        editingTx={editingTx}
       />
 
       {/* Modal transferencia */}

@@ -1,9 +1,9 @@
 import { memo } from 'react'
 import { CURRENCY_SYMBOLS, formatAmount } from '../../utils/currency'
-import { HiArrowsRightLeft, HiTrash } from 'react-icons/hi2'
+import { HiArrowsRightLeft, HiTrash, HiPencil } from 'react-icons/hi2'
 import { usePrivacy } from '../../contexts/PrivacyContext'
 
-export default memo(function TransactionItem({ transaction, onDelete }) {
+export default memo(function TransactionItem({ transaction, onDelete, onEdit }) {
   const isIncome = transaction.type === 'income'
   const isTransferIn = transaction.type === 'transfer_in'
   const isTransferOut = transaction.type === 'transfer_out'
@@ -86,6 +86,17 @@ export default memo(function TransactionItem({ transaction, onDelete }) {
         }`}>
           {balancesHidden ? '••••••' : `${isPositive ? '+' : '-'}${formatAmount(transaction.amount)} ${symbol}`}
         </span>
+
+        {/* Botón editar (solo income/expense/savings) */}
+        {!isTransfer && (
+          <button
+            onClick={() => onEdit(transaction)}
+            className="p-1.5 text-gray-300 dark:text-gray-600 hover:text-indigo-500 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
+            title="Editar"
+          >
+            <HiPencil className="w-4 h-4" />
+          </button>
+        )}
 
         {/* Solo mostrar boton eliminar en transfer_out (elimina ambas) o en income/expense */}
         {(!isTransfer || isTransferOut) && (

@@ -212,6 +212,72 @@ export async function createTransfer({
   return { txOut: { id: data.out_id }, txIn: { id: data.in_id } }
 }
 
+export async function updateTransaction(id, { wallet_id, category_id, type, amount, description, date, exchange_rate: customRate, goal_id }) {
+  if (goal_id && type !== 'savings') {
+    throw new Error('Las metas solo se pueden asignar a transacciones de ahorro')
+  }
+  if (type === 'savings' && !goal_id) {
+    throw new Error('Las transacciones de ahorro requieren una meta asignada')
+  }
+  if (type !== 'savings' && !category_id) {
+    throw new Error('Las transacciones de ingreso y gasto requieren una categoría')
+  }
+
+  const { data: wallet, error: walletError } = await supabase
+    .from('wallets')
+    .select('currency')
+    .eq('id', wallet_id)
+    .single()
+
+  if (walletError) throw walletError
+
+  let exchangeRate = customRate || null
+  let amountUsd = null
+
+  if (wallet.currency === 'USD' || wallet.currency === 'USDT') {
+    amountUsd = parseFloat(amount)
+  } else if (wallet.currency === 'VES') {
+    if (!exchangeRate) {
+      const { data: rateData } = await supabase
+        .from('exchange_rates')
+        .select('rate')
+        .eq('from_currency', 'USDT')
+        .eq('to_currency', 'VES')
+        .eq('is_current', true)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+
+      if (rateData) exchangeRate = rateData.rate
+    }
+
+    if (exchangeRate && exchangeRate > 0) {
+      amountUsd = Math.round((parseFloat(amount) / exchangeRate) * 100) / 100
+    }
+  }
+
+  const { data, error } = await supabase
+    .from('transactions')
+    .update({
+      wallet_id,
+      category_id: type === 'savings' ? null : category_id,
+      type,
+      amount,
+      currency: wallet.currency,
+      exchange_rate: exchangeRate,
+      amount_usd: amountUsd,
+      description: description || null,
+      date: date || new Date().toISOString(),
+      goal_id: goal_id || null,
+    })
+    .eq('id', id)
+    .select(TX_SELECT)
+    .single()
+
+  if (error) throw error
+  return data
+}
+
 export async function deleteTransaction(id) {
   // Verificar si tiene transaccion vinculada
   const { data: tx } = await supabase
