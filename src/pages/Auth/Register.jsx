@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { seedDefaultProducts } from '../../services/products'
 
 export default function Register() {
   const [email, setEmail] = useState('')
@@ -45,6 +46,8 @@ export default function Register() {
 
     try {
       await signUp(email, password)
+      // Seed de productos base en segundo plano — no bloqueante, fallo silencioso
+      seedDefaultProducts().catch(() => {})
       navigate('/')
     } catch (err) {
       const messages = {

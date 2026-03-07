@@ -12,7 +12,8 @@ import {
   HiChartPie,
   HiCog6Tooth,
   HiArrowRightOnRectangle,
-  HiXMark
+  HiXMark,
+  HiShoppingCart,
 } from 'react-icons/hi2'
 
 const navigation = [
@@ -25,6 +26,7 @@ const navigation = [
   { name: 'Metas de Ahorro', path: '/goals', icon: HiTrophy },
   { name: 'Recurrentes', path: '/recurring', icon: HiArrowPath },
   { name: 'Análisis', path: '/analytics', icon: HiChartPie },
+  { name: 'Mercado', path: '/market', icon: HiShoppingCart },
 ]
 
 export default function Sidebar({ onClose }) {

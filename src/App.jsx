@@ -24,6 +24,8 @@ const Goals = lazy(() => import('./pages/Goals/Goals'))
 const Recurring = lazy(() => import('./pages/Recurring/Recurring'))
 const Analytics = lazy(() => import('./pages/Analytics/Analytics'))
 const Settings = lazy(() => import('./pages/Settings/Settings'))
+const Market = lazy(() => import('./pages/Market/Market'))
+const ShoppingListDetail = lazy(() => import('./pages/Market/ShoppingListDetail'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 
 function PageLoader() {
@@ -62,6 +64,8 @@ function App() {
               <Route path="/recurring" element={<Recurring />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/market" element={<Market />} />
+              <Route path="/market/list/:id" element={<ShoppingListDetail />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
