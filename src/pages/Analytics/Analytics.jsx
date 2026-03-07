@@ -90,8 +90,8 @@ export default function Analytics() {
               key={p.value}
               onClick={() => setPeriod(p.value)}
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${period === p.value
-                  ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                 }`}
             >
               {p.label}
@@ -135,10 +135,10 @@ export default function Analytics() {
             <p className="mb-1 text-gray-500 text-xs dark:text-gray-400">vs Mes Anterior</p>
             <p
               className={`text-xl font-bold ${stats.expenseChange > 0
-                  ? 'text-red-600 dark:text-red-400'
-                  : stats.expenseChange < 0
-                    ? 'text-green-600 dark:text-green-400'
-                    : 'text-gray-900 dark:text-white'
+                ? 'text-red-600 dark:text-red-400'
+                : stats.expenseChange < 0
+                  ? 'text-green-600 dark:text-green-400'
+                  : 'text-gray-900 dark:text-white'
                 }`}
             >
               {stats.expenseChange > 0 ? '+' : ''}
@@ -154,7 +154,7 @@ export default function Analytics() {
         {/* Gastos por Categoria */}
         <div className="bg-white dark:bg-gray-800 shadow-sm p-5 rounded-xl">
           <h2 className="mb-4 font-semibold text-gray-900 text-lg dark:text-white">
-            Gastos por Categoria
+            Gastos por Categoría
           </h2>
           <ExpensesPieChart
             data={expensesByCategory}
@@ -178,7 +178,7 @@ export default function Analytics() {
         {/* Evolucion del Balance */}
         <div className="bg-white dark:bg-gray-800 shadow-sm p-5 rounded-xl">
           <h2 className="mb-4 font-semibold text-gray-900 text-lg dark:text-white">
-            Evolucion del Balance
+            Evolución del Balance
           </h2>
           <BalanceLineChart data={balanceEvolution} />
           <p className="mt-2 text-center text-gray-400 text-xs">
@@ -189,7 +189,7 @@ export default function Analytics() {
         {/* Distribucion por Billetera */}
         <div className="bg-white dark:bg-gray-800 shadow-sm p-5 rounded-xl">
           <h2 className="mb-4 font-semibold text-gray-900 text-lg dark:text-white">
-            Distribucion por Billetera
+            Distribución por Billetera
           </h2>
           <WalletDistributionChart data={walletDistribution} />
         </div>
@@ -228,8 +228,8 @@ export default function Analytics() {
               <p className="mb-1 text-gray-500 text-sm dark:text-gray-400">Balance Neto</p>
               <p
                 className={`text-2xl font-bold ${stats.currentIncome - stats.currentExpense >= 0
-                    ? 'text-green-600 dark:text-green-400'
-                    : 'text-red-600 dark:text-red-400'
+                  ? 'text-green-600 dark:text-green-400'
+                  : 'text-red-600 dark:text-red-400'
                   }`}
               >
                 {stats.currentIncome - stats.currentExpense >= 0 ? '+$' : '-$'}

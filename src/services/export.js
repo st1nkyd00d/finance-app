@@ -4,11 +4,7 @@ import * as XLSX from 'xlsx'
 import { saveAs } from 'file-saver'
 
 function escapeHTML(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
 // =============================================
@@ -17,12 +13,32 @@ function escapeHTML(str) {
 
 export async function fetchAllUserData() {
   const [wallets, categories, transactions, budgets, recurring, rates] = await Promise.all([
-    supabase.from('wallets').select('*').then(r => r.data || []),
-    supabase.from('categories').select('*').then(r => r.data || []),
-    supabase.from('transactions').select('*').order('date', { ascending: false }).then(r => r.data || []),
-    supabase.from('budgets').select('*').then(r => r.data || []),
-    supabase.from('recurring_transactions').select('*').then(r => r.data || []),
-    supabase.from('exchange_rates').select('*').order('created_at', { ascending: false }).then(r => r.data || []),
+    supabase
+      .from('wallets')
+      .select('*')
+      .then((r) => r.data || []),
+    supabase
+      .from('categories')
+      .select('*')
+      .then((r) => r.data || []),
+    supabase
+      .from('transactions')
+      .select('*')
+      .order('date', { ascending: false })
+      .then((r) => r.data || []),
+    supabase
+      .from('budgets')
+      .select('*')
+      .then((r) => r.data || []),
+    supabase
+      .from('recurring_transactions')
+      .select('*')
+      .then((r) => r.data || []),
+    supabase
+      .from('exchange_rates')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .then((r) => r.data || [])
   ])
 
   return { wallets, categories, transactions, budgets, recurring, rates }
@@ -34,11 +50,11 @@ export async function fetchAllUserData() {
 
 export function exportToCSV(transactions, wallets, categories) {
   // Crear mapas para lookup
-  const walletMap = Object.fromEntries(wallets.map(w => [w.id, w]))
-  const categoryMap = Object.fromEntries(categories.map(c => [c.id, c]))
+  const walletMap = Object.fromEntries(wallets.map((w) => [w.id, w]))
+  const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c]))
 
   // Preparar datos
-  const rows = transactions.map(tx => ({
+  const rows = transactions.map((tx) => ({
     Fecha: new Date(tx.date).toLocaleDateString('es-VE'),
     Tipo: tx.type === 'income' ? 'Ingreso' : tx.type === 'expense' ? 'Gasto' : tx.type === 'transfer_in' ? 'Transferencia (entrada)' : 'Transferencia (salida)',
     Categoria: categoryMap[tx.category_id]?.name || '-',
@@ -46,26 +62,28 @@ export function exportToCSV(transactions, wallets, categories) {
     Monto: tx.amount,
     Moneda: tx.currency,
     Descripcion: tx.description || '',
-    'Tasa de Cambio': tx.exchange_rate || '',
+    'Tasa de Cambio': tx.exchange_rate || ''
   }))
 
   // Crear CSV
   const headers = Object.keys(rows[0] || {})
   const csvContent = [
     headers.join(','),
-    ...rows.map(row =>
-      headers.map(h => {
-        let val = String(row[h] ?? '')
-        // Proteger contra inyección de fórmulas (CSV Injection)
-        if (/^[=+\-@\t\r]/.test(val)) {
-          val = "'" + val
-        }
-        // Escapar comas y comillas
-        if (val.includes(',') || val.includes('"') || val.includes('\n')) {
-          return `"${val.replace(/"/g, '""')}"`
-        }
-        return val
-      }).join(',')
+    ...rows.map((row) =>
+      headers
+        .map((h) => {
+          let val = String(row[h] ?? '')
+          // Proteger contra inyección de fórmulas (CSV Injection)
+          if (/^[=+\-@\t\r]/.test(val)) {
+            val = "'" + val
+          }
+          // Escapar comas y comillas
+          if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+            return `"${val.replace(/"/g, '""')}"`
+          }
+          return val
+        })
+        .join(',')
     )
   ].join('\n')
 
@@ -85,11 +103,11 @@ export async function exportToExcel() {
   const { wallets, categories, transactions, budgets, recurring, rates } = await fetchAllUserData()
 
   // Crear mapas para lookup
-  const walletMap = Object.fromEntries(wallets.map(w => [w.id, w]))
-  const categoryMap = Object.fromEntries(categories.map(c => [c.id, c]))
+  const walletMap = Object.fromEntries(wallets.map((w) => [w.id, w]))
+  const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c]))
 
   // Sheet: Transacciones
-  const txData = transactions.map(tx => ({
+  const txData = transactions.map((tx) => ({
     Fecha: new Date(tx.date).toLocaleDateString('es-VE'),
     Tipo: tx.type === 'income' ? 'Ingreso' : tx.type === 'expense' ? 'Gasto' : tx.type === 'transfer_in' ? 'Transferencia (entrada)' : 'Transferencia (salida)',
     Categoria: categoryMap[tx.category_id]?.name || '-',
@@ -97,36 +115,36 @@ export async function exportToExcel() {
     Monto: parseFloat(tx.amount),
     Moneda: tx.currency,
     Descripcion: tx.description || '',
-    'Tasa de Cambio': tx.exchange_rate ? parseFloat(tx.exchange_rate) : '',
+    'Tasa de Cambio': tx.exchange_rate ? parseFloat(tx.exchange_rate) : ''
   }))
 
   // Sheet: Billeteras
-  const walletData = wallets.map(w => ({
+  const walletData = wallets.map((w) => ({
     Nombre: w.name,
     Moneda: w.currency,
     'Incluir en Total': w.include_in_total ? 'Si' : 'No',
-    'Fecha Creacion': new Date(w.created_at).toLocaleDateString('es-VE'),
+    'Fecha Creacion': new Date(w.created_at).toLocaleDateString('es-VE')
   }))
 
   // Sheet: Categorias
-  const categoryData = categories.map(c => ({
+  const categoryData = categories.map((c) => ({
     Nombre: c.name,
     Tipo: c.type === 'income' ? 'Ingreso' : 'Gasto',
     Color: c.color,
-    'Fecha Creacion': new Date(c.created_at).toLocaleDateString('es-VE'),
+    'Fecha Creacion': new Date(c.created_at).toLocaleDateString('es-VE')
   }))
 
   // Sheet: Presupuestos
-  const budgetData = budgets.map(b => ({
+  const budgetData = budgets.map((b) => ({
     Categoria: categoryMap[b.category_id]?.name || '-',
     'Limite (USD)': parseFloat(b.amount),
     Periodo: b.period === 'weekly' ? 'Semanal' : b.period === 'monthly' ? 'Mensual' : 'Anual',
     'Fecha Inicio': b.start_date,
-    Activo: b.is_active ? 'Si' : 'No',
+    Activo: b.is_active ? 'Si' : 'No'
   }))
 
   // Sheet: Recurrentes
-  const recurringData = recurring.map(r => ({
+  const recurringData = recurring.map((r) => ({
     Descripcion: r.description || categoryMap[r.category_id]?.name || '-',
     Tipo: r.type === 'income' ? 'Ingreso' : 'Gasto',
     Billetera: walletMap[r.wallet_id]?.name || '-',
@@ -134,7 +152,7 @@ export async function exportToExcel() {
     Frecuencia: r.frequency,
     'Fecha Inicio': r.start_date,
     'Fecha Fin': r.end_date || '-',
-    Activo: r.is_active ? 'Si' : 'No',
+    Activo: r.is_active ? 'Si' : 'No'
   }))
 
   // Crear workbook
@@ -183,7 +201,7 @@ export async function exportToJSON() {
   const backup = {
     version: '1.0',
     exportedAt: new Date().toISOString(),
-    data,
+    data
   }
 
   const json = JSON.stringify(backup, null, 2)
@@ -252,8 +270,12 @@ function validateImportData(data) {
       if (isNaN(amount) || amount < 0 || amount > MAX_AMOUNT) errors.push(`transactions[${i}]: amount invalido`)
       if (!VALID_TX_TYPES.includes(tx.type)) errors.push(`transactions[${i}]: type invalido '${tx.type}'`)
       if (tx.currency && !VALID_CURRENCIES.includes(tx.currency)) errors.push(`transactions[${i}]: currency invalida`)
-      if (tx.description && typeof tx.description === 'string' && tx.description.length > MAX_STRING_LENGTH) errors.push(`transactions[${i}]: description demasiado larga`)
-      if (errors.length > 10) { errors.push('...demasiados errores, abortando validación'); break }
+      if (tx.description && typeof tx.description === 'string' && tx.description.length > MAX_STRING_LENGTH)
+        errors.push(`transactions[${i}]: description demasiado larga`)
+      if (errors.length > 10) {
+        errors.push('...demasiados errores, abortando validación')
+        break
+      }
     }
   }
 
@@ -328,7 +350,7 @@ export async function importFromJSON(file, options = { merge: false }) {
                 name: cat.name,
                 type: cat.type,
                 color: cat.color,
-                icon: cat.icon,
+                icon: cat.icon
               })
               .select()
               .single()
@@ -349,7 +371,7 @@ export async function importFromJSON(file, options = { merge: false }) {
                 user_id: user.id,
                 name: wallet.name,
                 currency: wallet.currency,
-                include_in_total: wallet.include_in_total,
+                include_in_total: wallet.include_in_total
               })
               .select()
               .single()
@@ -380,7 +402,7 @@ export async function importFromJSON(file, options = { merge: false }) {
                 amount_usd: tx.amount_usd || null,
                 conversion_rate: tx.conversion_rate || null,
                 description: tx.description,
-                date: tx.date,
+                date: tx.date
               })
               .select('id')
               .single()
@@ -393,10 +415,7 @@ export async function importFromJSON(file, options = { merge: false }) {
           // Re-vincular transferencias usando el mapa de IDs
           for (const tx of transactions) {
             if (tx.linked_transaction_id && txIdMap[tx.id] && txIdMap[tx.linked_transaction_id]) {
-              await supabase
-                .from('transactions')
-                .update({ linked_transaction_id: txIdMap[tx.linked_transaction_id] })
-                .eq('id', txIdMap[tx.id])
+              await supabase.from('transactions').update({ linked_transaction_id: txIdMap[tx.linked_transaction_id] }).eq('id', txIdMap[tx.id])
             }
           }
         }
@@ -404,14 +423,14 @@ export async function importFromJSON(file, options = { merge: false }) {
         // Importar presupuestos
         if (budgets && budgets.length > 0) {
           const budgetsToInsert = budgets
-            .filter(b => categoryIdMap[b.category_id])
-            .map(b => ({
+            .filter((b) => categoryIdMap[b.category_id])
+            .map((b) => ({
               user_id: user.id,
               category_id: categoryIdMap[b.category_id],
               amount: b.amount,
               period: b.period,
               start_date: b.start_date,
-              is_active: b.is_active,
+              is_active: b.is_active
             }))
 
           if (budgetsToInsert.length > 0) {
@@ -422,8 +441,8 @@ export async function importFromJSON(file, options = { merge: false }) {
         // Importar recurrentes
         if (recurring && recurring.length > 0) {
           const recurringToInsert = recurring
-            .filter(r => walletIdMap[r.wallet_id] && categoryIdMap[r.category_id])
-            .map(r => ({
+            .filter((r) => walletIdMap[r.wallet_id] && categoryIdMap[r.category_id])
+            .map((r) => ({
               user_id: user.id,
               wallet_id: walletIdMap[r.wallet_id],
               category_id: categoryIdMap[r.category_id],
@@ -433,7 +452,7 @@ export async function importFromJSON(file, options = { merge: false }) {
               start_date: r.start_date,
               end_date: r.end_date,
               is_active: r.is_active,
-              description: r.description,
+              description: r.description
             }))
 
           if (recurringToInsert.length > 0) {
@@ -448,8 +467,8 @@ export async function importFromJSON(file, options = { merge: false }) {
             categories: Object.keys(categoryIdMap).length,
             transactions: transactions?.length || 0,
             budgets: budgets?.length || 0,
-            recurring: recurring?.length || 0,
-          },
+            recurring: recurring?.length || 0
+          }
         })
       } catch (err) {
         reject(err)
@@ -469,14 +488,14 @@ export async function generateHTMLReport() {
   const { wallets, categories, transactions } = await fetchAllUserData()
 
   // Crear mapas
-  const walletMap = Object.fromEntries(wallets.map(w => [w.id, w]))
-  const categoryMap = Object.fromEntries(categories.map(c => [c.id, c]))
+  const walletMap = Object.fromEntries(wallets.map((w) => [w.id, w]))
+  const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c]))
 
   // Calcular estadisticas
   const now = new Date()
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 
-  const thisMonthTx = transactions.filter(tx => new Date(tx.date) >= startOfMonth)
+  const thisMonthTx = transactions.filter((tx) => new Date(tx.date) >= startOfMonth)
 
   let totalIncome = 0
   let totalExpense = 0
@@ -538,7 +557,7 @@ export async function generateHTMLReport() {
         </div>
       </div>
 
-      <h2>Gastos por Categoria</h2>
+      <h2>Gastos por Categoría</h2>
       <table>
         <thead>
           <tr>
@@ -550,13 +569,16 @@ export async function generateHTMLReport() {
         <tbody>
           ${Object.entries(expenseByCategory)
             .sort((a, b) => b[1] - a[1])
-            .map(([cat, amount]) => `
+            .map(
+              ([cat, amount]) => `
               <tr>
                 <td>${escapeHTML(cat)}</td>
                 <td>${amount.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</td>
                 <td>${totalExpense > 0 ? ((amount / totalExpense) * 100).toFixed(1) : 0}%</td>
               </tr>
-            `).join('')}
+            `
+            )
+            .join('')}
         </tbody>
       </table>
 
@@ -569,12 +591,16 @@ export async function generateHTMLReport() {
           </tr>
         </thead>
         <tbody>
-          ${wallets.map(w => `
+          ${wallets
+            .map(
+              (w) => `
             <tr>
               <td>${escapeHTML(w.name)}</td>
               <td>${escapeHTML(w.currency)}</td>
             </tr>
-          `).join('')}
+          `
+            )
+            .join('')}
         </tbody>
       </table>
 
