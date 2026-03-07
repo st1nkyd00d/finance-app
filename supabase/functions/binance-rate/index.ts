@@ -30,7 +30,7 @@ serve(async (req) => {
       body: JSON.stringify({
         asset: 'USDT',
         fiat: 'VES',
-        merchantCheck: true,
+        merchantCheck: false,
         page: 1,
         payTypes: [],
         rows: rows,
@@ -55,19 +55,23 @@ serve(async (req) => {
       )
     }
 
-    // Calcular estadísticas de las ofertas
-    const prices = ads.map((ad: any) => parseFloat(ad.adv.price))
-    const average = prices.reduce((sum: number, p: number) => sum + p, 0) / prices.length
-    const min = Math.min(...prices)
-    const max = Math.max(...prices)
+    // Usar solo los primeros 3 anuncios (los más competitivos)
+    const top3 = ads.slice(0, 3)
+    const prices = top3.map((ad: any) => parseFloat(ad.adv.price))
 
-    // Retornar la tasa promedio y estadísticas
+    // Calcular mediana de los 3 precios
+    const sorted = [...prices].sort((a, b) => a - b)
+    const median = sorted[Math.floor(sorted.length / 2)]
+    const min = sorted[0]
+    const max = sorted[sorted.length - 1]
+
+    // Retornar la mediana y estadísticas
     return new Response(
       JSON.stringify({
-        rate: Math.round(average * 100) / 100,
+        rate: Math.round(median * 100) / 100,
         min: Math.round(min * 100) / 100,
         max: Math.round(max * 100) / 100,
-        count: ads.length,
+        count: top3.length,
         tradeType: tradeType,
         timestamp: new Date().toISOString(),
       }),
