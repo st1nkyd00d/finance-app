@@ -41,13 +41,13 @@ export default function IncomeExpenseChart({ data }) {
           <p className="font-medium text-gray-900 dark:text-white mb-2">{label}</p>
           <div className="space-y-1 text-sm">
             <p className="text-green-600 dark:text-green-400">
-              Ingresos: {income.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
+              Ingresos: ${income.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
             </p>
             <p className="text-red-600 dark:text-red-400">
-              Gastos: {expense.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
+              Gastos: ${expense.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
             </p>
             <p className={`font-medium ${balance >= 0 ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}`}>
-              Balance: {balance >= 0 ? '+' : ''}{balance.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
+              Balance: {balance >= 0 ? '+$' : '-$'}{Math.abs(balance).toLocaleString('es-VE', { minimumFractionDigits: 2 })}
             </p>
           </div>
         </div>

@@ -5,7 +5,7 @@ export async function fetchCategories() {
   const { data, error } = await supabase
     .from('categories')
     .select('*')
-    .order('created_at', { ascending: true })
+    .order('name', { ascending: true })
 
   if (error) throw error
   return data

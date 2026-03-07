@@ -20,7 +20,7 @@ export default function ExpensesPieChart({ data, onCategoryClick }) {
         <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-3 border border-gray-200 dark:border-gray-700">
           <p className="font-medium text-gray-900 dark:text-white">{item.name}</p>
           <p className="text-sm text-gray-600 dark:text-gray-300">
-            {formatAmount(item.total)} ({percentage}%)
+            ${formatAmount(item.total)} ({percentage}%)
           </p>
           <p className="text-xs text-gray-400">{item.count} transacciones</p>
         </div>

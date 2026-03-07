@@ -43,7 +43,7 @@ export async function getExpensesByCategory(dateFrom, dateTo, rates = null) {
     grouped[catId].count += 1
   }
 
-  return Object.values(grouped).sort((a, b) => b.total - a.total)
+  return Object.values(grouped).sort((a, b) => a.name.localeCompare(b.name, 'es'))
 }
 
 // Obtener ingresos vs gastos por mes (ultimos N meses) - todo en USD
