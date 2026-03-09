@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { fetchTransactions, createTransaction, createTransfer, deleteTransaction, updateTransaction } from '../../services/transactions'
 import { useToast } from '../../contexts/ToastContext'
+import useCurrencyConvert from '../../hooks/useCurrencyConvert'
 import TransactionItem from './TransactionItem'
 import TransactionForm from './TransactionForm'
 import TransferForm from './TransferForm'
@@ -64,6 +65,7 @@ export default function Transactions() {
   const [editingTx, setEditingTx] = useState(null)
   const [deletingTx, setDeletingTx] = useState(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
+  const { convert } = useCurrencyConvert()
 
   const loadTransactions = useCallback(async (pageNum = 0, currentFilters = {}) => {
     try {
@@ -225,6 +227,7 @@ export default function Transactions() {
                 transaction={tx}
                 onDelete={setDeletingTx}
                 onEdit={setEditingTx}
+                convert={convert}
               />
             ))}
           </div>

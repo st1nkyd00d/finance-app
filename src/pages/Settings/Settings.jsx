@@ -8,12 +8,14 @@ import {
   importFromJSON,
   generateHTMLReport,
   fetchAllUserData,
+  deleteAllUserData,
 } from '../../services/export'
 import { fetchWallets } from '../../services/wallets'
 import { fetchCategories } from '../../services/categories'
 import { fetchTransactions } from '../../services/transactions'
 import ConfirmDialog from '../../components/ui/ConfirmDialog'
-import { HiSun, HiMoon, HiTableCells, HiDocumentText, HiCircleStack, HiArrowUpTray } from 'react-icons/hi2'
+import Modal from '../../components/ui/Modal'
+import { HiSun, HiMoon, HiTableCells, HiDocumentText, HiCircleStack, HiArrowUpTray, HiExclamationTriangle } from 'react-icons/hi2'
 
 export default function Settings() {
   const { user } = useAuth()
@@ -25,6 +27,10 @@ export default function Settings() {
   const [showImportConfirm, setShowImportConfirm] = useState(false)
   const [pendingFile, setPendingFile] = useState(null)
   const [importMode, setImportMode] = useState('replace')
+
+  const [showDeleteAll, setShowDeleteAll] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
+  const [deleting, setDeleting] = useState(false)
 
   async function handleExportCSV() {
     setExporting('csv')
@@ -121,6 +127,28 @@ export default function Settings() {
         fileInputRef.current.value = ''
       }
     }
+  }
+
+  async function handleDeleteAll() {
+    setDeleting(true)
+    try {
+      await deleteAllUserData()
+      setShowDeleteAll(false)
+      setDeleteConfirmText('')
+      // Recargar la app para reflejar el estado vacío
+      window.location.reload()
+    } catch (err) {
+      console.error('Error al borrar datos:', err)
+      alert('Error al borrar datos: ' + err.message)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  function handleCloseDeleteAll() {
+    if (deleting) return
+    setShowDeleteAll(false)
+    setDeleteConfirmText('')
   }
 
   return (
@@ -349,7 +377,7 @@ export default function Settings() {
       </div>
 
       {/* Info */}
-      <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl">
+      <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl mb-6">
         <h2 className="mb-2 font-semibold text-gray-900 text-lg dark:text-white">Acerca de</h2>
         <p className="text-gray-500 text-sm dark:text-gray-400">
           Finance App v1.0 - Aplicacion de finanzas personales
@@ -358,6 +386,91 @@ export default function Settings() {
           Desarrollada con React + Supabase
         </p>
       </div>
+
+      {/* Zona de Peligro */}
+      <div className="border-2 border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-6 rounded-xl">
+        <div className="flex items-center gap-3 mb-3">
+          <HiExclamationTriangle className="w-6 h-6 text-red-600 dark:text-red-400 shrink-0" />
+          <h2 className="font-semibold text-red-700 text-lg dark:text-red-400">Zona de Peligro</h2>
+        </div>
+        <p className="text-red-600 dark:text-red-400 text-sm mb-4">
+          Las acciones en esta sección son <strong>irreversibles</strong>. Procede con extrema precaución.
+        </p>
+        <div className="flex items-start justify-between gap-4 bg-white dark:bg-gray-800 border border-red-200 dark:border-red-800 rounded-lg p-4">
+          <div>
+            <p className="font-medium text-gray-900 dark:text-white text-sm">Borrar todos mis datos</p>
+            <p className="text-gray-500 dark:text-gray-400 text-xs mt-0.5">
+              Elimina permanentemente todas tus billeteras, transacciones, categorías, presupuestos y más.
+            </p>
+          </div>
+          <button
+            onClick={() => setShowDeleteAll(true)}
+            className="shrink-0 px-3 py-1.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+          >
+            Borrar todo
+          </button>
+        </div>
+      </div>
+
+      {/* Modal borrar todos los datos */}
+      <Modal isOpen={showDeleteAll} onClose={handleCloseDeleteAll} title="Borrar todos los datos">
+        <div className="flex flex-col items-center text-center mb-5">
+          <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center mb-3">
+            <HiExclamationTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
+          </div>
+          <p className="font-bold text-red-600 dark:text-red-400 text-lg">¡Esta acción NO se puede deshacer!</p>
+        </div>
+
+        <p className="text-gray-700 dark:text-gray-300 text-sm mb-3">
+          Se eliminarán <strong>permanentemente</strong> todos tus datos, incluyendo:
+        </p>
+        <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 mb-5 list-none">
+          {[
+            'Todas las transacciones e historial',
+            'Todas las billeteras y sus balances',
+            'Todas las categorías',
+            'Todos los presupuestos',
+            'Todas las metas de ahorro',
+            'Todos los pagos recurrentes',
+            'Todas las tasas de cambio',
+            'Todos los datos del Mercado',
+          ].map((item) => (
+            <li key={item} className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+              {item}
+            </li>
+          ))}
+        </ul>
+
+        <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+          Para confirmar, escribe <strong className="text-red-600 dark:text-red-400">ELIMINAR</strong> en el campo de abajo:
+        </p>
+        <input
+          type="text"
+          value={deleteConfirmText}
+          onChange={(e) => setDeleteConfirmText(e.target.value)}
+          placeholder="ELIMINAR"
+          disabled={deleting}
+          className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white mb-4 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
+        />
+
+        <div className="flex gap-3 justify-end">
+          <button
+            onClick={handleCloseDeleteAll}
+            disabled={deleting}
+            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleDeleteAll}
+            disabled={deleting || deleteConfirmText !== 'ELIMINAR'}
+            className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {deleting ? 'Borrando...' : 'Borrar todo para siempre'}
+          </button>
+        </div>
+      </Modal>
 
       {/* Confirm Dialog */}
       <ConfirmDialog

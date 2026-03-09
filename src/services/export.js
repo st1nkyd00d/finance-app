@@ -45,6 +45,36 @@ export async function fetchAllUserData() {
 }
 
 // =============================================
+// DELETE ALL USER DATA
+// =============================================
+
+export async function deleteAllUserData() {
+  const user = await getAuthenticatedUser()
+  const uid = user.id
+
+  // Orden: tablas dependientes primero para respetar FK constraints
+  const tables = [
+    'transactions',
+    'recurring_transactions',
+    'budgets',
+    'shopping_list_items',
+    'product_prices',
+    'shopping_lists',
+    'savings_goals',
+    'wallets',
+    'categories',
+    'stores',
+    'product_catalog',
+    'exchange_rates',
+  ]
+
+  for (const table of tables) {
+    const { error } = await supabase.from(table).delete().eq('user_id', uid)
+    if (error) throw new Error(`Error al borrar ${table}: ${error.message}`)
+  }
+}
+
+// =============================================
 // EXPORT CSV
 // =============================================
 
