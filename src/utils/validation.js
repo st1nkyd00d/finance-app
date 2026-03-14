@@ -30,7 +30,7 @@ export function validateAmount(value, maxDigits = 9, maxDecimals = 2) {
     return {
       valid: false,
       value: null,
-      error: `El monto máximo es ${maxValue.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+      error: `El monto máximo es ${maxValue.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 3 })}`
     }
   }
 

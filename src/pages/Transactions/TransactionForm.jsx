@@ -192,7 +192,7 @@ export default function TransactionForm({ isOpen, onClose, onSave, editingTx = n
   // Calcular equivalente en USD
   const amountNum = parseFloat(amount) || 0
   const amountUsd = selectedWallet?.currency === 'VES' && exchangeRate > 0
-    ? (amountNum / exchangeRate).toFixed(2)
+    ? (amountNum / exchangeRate).toFixed(3)
     : null
 
   return (

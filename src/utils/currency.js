@@ -7,7 +7,7 @@ export const CURRENCY_SYMBOLS = {
 export function formatAmount(value) {
   return parseFloat(value || 0).toLocaleString('es-VE', {
     minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    maximumFractionDigits: 3,
   })
 }
 

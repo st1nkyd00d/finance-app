@@ -63,13 +63,13 @@ export default memo(function TransactionItem({ transaction, onDelete, onEdit, co
             {transaction.conversion_rate && (
               <>
                 <span className="text-xs text-gray-300 dark:text-gray-600">|</span>
-                <span className="text-xs text-blue-500 dark:text-blue-400">Tasa: {parseFloat(transaction.conversion_rate).toLocaleString('es-VE', { minimumFractionDigits: 2 })}</span>
+                <span className="text-xs text-blue-500 dark:text-blue-400">Tasa: {parseFloat(transaction.conversion_rate).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 3 })}</span>
               </>
             )}
             {transaction.fee && transaction.type === 'transfer_out' && (
               <>
                 <span className="text-xs text-gray-300 dark:text-gray-600">|</span>
-                <span className="text-xs text-amber-500 dark:text-amber-400">Comisión: {parseFloat(transaction.fee).toLocaleString('es-VE', { minimumFractionDigits: 2 })} {symbol}</span>
+                <span className="text-xs text-amber-500 dark:text-amber-400">Comisión: {parseFloat(transaction.fee).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 3 })} {symbol}</span>
               </>
             )}
             {transaction.description && (

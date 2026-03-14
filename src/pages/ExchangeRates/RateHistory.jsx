@@ -50,7 +50,7 @@ export default function RateHistory({ isOpen, onClose, pair }) {
                 <tr key={entry.id} className="border-b border-gray-50 dark:border-gray-700/50">
                   <td className="py-2.5 px-2">
                     <span className={`font-medium ${entry.is_current ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-900 dark:text-white'}`}>
-                      {parseFloat(entry.rate).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {parseFloat(entry.rate).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 3 })}
                     </span>
                     {entry.is_current && (
                       <span className="ml-1.5 text-xs bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded">

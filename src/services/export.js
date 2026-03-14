@@ -575,15 +575,15 @@ export async function generateHTMLReport() {
       <div class="stats">
         <div class="stat-card">
           <div>Ingresos</div>
-          <div class="stat-value income">+${totalIncome.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</div>
+          <div class="stat-value income">+${totalIncome.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 3 })}</div>
         </div>
         <div class="stat-card">
           <div>Gastos</div>
-          <div class="stat-value expense">-${totalExpense.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</div>
+          <div class="stat-value expense">-${totalExpense.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 3 })}</div>
         </div>
         <div class="stat-card">
           <div>Balance</div>
-          <div class="stat-value balance">${(totalIncome - totalExpense).toLocaleString('es-VE', { minimumFractionDigits: 2 })}</div>
+          <div class="stat-value balance">${(totalIncome - totalExpense).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 3 })}</div>
         </div>
       </div>
 
@@ -603,7 +603,7 @@ export async function generateHTMLReport() {
               ([cat, amount]) => `
               <tr>
                 <td>${escapeHTML(cat)}</td>
-                <td>${amount.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</td>
+                <td>${amount.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 3 })}</td>
                 <td>${totalExpense > 0 ? ((amount / totalExpense) * 100).toFixed(1) : 0}%</td>
               </tr>
             `

@@ -37,11 +37,11 @@ export default function BalanceLineChart({ data }) {
         <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-3 border border-gray-200 dark:border-gray-700">
           <p className="font-medium text-gray-900 dark:text-white mb-1">{label}</p>
           <p className={`text-sm ${balance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-            Balance: {balance.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
+            Balance: {balance.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 3 })}
           </p>
           {change !== 0 && (
             <p className={`text-xs ${change >= 0 ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
-              Cambio: {change >= 0 ? '+' : ''}{change.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
+              Cambio: {change >= 0 ? '+' : ''}{change.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 3 })}
             </p>
           )}
         </div>
