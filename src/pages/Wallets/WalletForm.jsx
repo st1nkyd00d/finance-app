@@ -12,6 +12,7 @@ export default function WalletForm({ isOpen, onClose, onSave, wallet = null }) {
   const [name, setName] = useState('')
   const [currency, setCurrency] = useState('VES')
   const [includeInTotal, setIncludeInTotal] = useState(true)
+  const [newBalance, setNewBalance] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -22,10 +23,12 @@ export default function WalletForm({ isOpen, onClose, onSave, wallet = null }) {
       setName(wallet.name)
       setCurrency(wallet.currency)
       setIncludeInTotal(wallet.include_in_total)
+      setNewBalance(String(wallet.balance ?? ''))
     } else {
       setName('')
       setCurrency('VES')
       setIncludeInTotal(true)
+      setNewBalance('')
     }
     setError('')
   }, [wallet, isOpen])
@@ -42,10 +45,17 @@ export default function WalletForm({ isOpen, onClose, onSave, wallet = null }) {
 
     setLoading(true)
     try {
+      const parsedBalance = isEditing ? parseFloat(newBalance) : undefined
+      if (isEditing && (isNaN(parsedBalance))) {
+        setError('El balance debe ser un número válido')
+        setLoading(false)
+        return
+      }
       await onSave({
         name: name.trim(),
         currency,
         include_in_total: includeInTotal,
+        newBalance: isEditing ? parsedBalance : undefined,
       })
       onClose()
     } catch (err) {
@@ -107,6 +117,25 @@ export default function WalletForm({ isOpen, onClose, onSave, wallet = null }) {
             </p>
           )}
         </div>
+
+        {isEditing && (
+          <div>
+            <label htmlFor="wallet-balance" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Balance actual
+            </label>
+            <input
+              id="wallet-balance"
+              type="number"
+              step="any"
+              value={newBalance}
+              onChange={(e) => setNewBalance(e.target.value)}
+              className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+            <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+              Se creará una transacción de ajuste por la diferencia.
+            </p>
+          </div>
+        )}
 
         <div className="flex items-center gap-3">
           <input

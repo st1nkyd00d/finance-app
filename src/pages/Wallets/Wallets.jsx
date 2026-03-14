@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { fetchWallets, createWallet, updateWallet, deleteWallet } from '../../services/wallets'
+import { fetchWallets, createWallet, updateWallet, deleteWallet, adjustBalance } from '../../services/wallets'
 import { useToast } from '../../contexts/ToastContext'
 import WalletCard from './WalletCard'
 import WalletForm from './WalletForm'
@@ -40,8 +40,14 @@ export default function Wallets() {
     toast.success('Billetera creada exitosamente')
   }
 
-  async function handleUpdate(walletData) {
+  async function handleUpdate({ newBalance, ...walletData }) {
     await updateWallet(editingWallet.id, walletData)
+    if (newBalance !== undefined) {
+      const delta = Math.round((newBalance - (editingWallet.balance ?? 0)) * 100) / 100
+      if (delta !== 0) {
+        await adjustBalance(editingWallet.id, editingWallet.currency, delta)
+      }
+    }
     await loadWallets()
     toast.success('Billetera actualizada')
   }

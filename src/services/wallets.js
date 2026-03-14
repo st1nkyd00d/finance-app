@@ -47,6 +47,45 @@ export async function updateWallet(id, updates) {
   return data
 }
 
+export async function adjustBalance(walletId, walletCurrency, delta) {
+  if (delta === 0) return
+  const user = await getAuthenticatedUser()
+
+  const type = delta > 0 ? 'income' : 'expense'
+  const amount = Math.abs(delta)
+
+  let amountUsd = null
+  if (walletCurrency === 'USD' || walletCurrency === 'USDT') {
+    amountUsd = amount
+  } else if (walletCurrency === 'VES') {
+    const { data: rateData } = await supabase
+      .from('exchange_rates')
+      .select('rate')
+      .eq('from_currency', 'USDT')
+      .eq('to_currency', 'VES')
+      .eq('is_current', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+    if (rateData?.rate > 0) {
+      amountUsd = Math.round((amount / rateData.rate) * 100) / 100
+    }
+  }
+
+  const { error } = await supabase.from('transactions').insert({
+    user_id: user.id,
+    wallet_id: walletId,
+    type,
+    amount,
+    amount_usd: amountUsd,
+    description: 'Ajuste de balance',
+    date: new Date().toISOString(),
+    category_id: null,
+  })
+
+  if (error) throw error
+}
+
 export async function deleteWallet(id) {
   // Verificar si tiene transacciones
   const { count, error: countError } = await supabase
