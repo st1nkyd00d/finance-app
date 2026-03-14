@@ -112,6 +112,25 @@ export async function getBalanceEvolution(days = 30) {
   const startDate = new Date()
   startDate.setDate(startDate.getDate() - days)
 
+  const rates = await fetchCurrentRates()
+
+  // Balance acumulado ANTES del inicio del periodo (para arrancar desde el balance real)
+  const { data: prevData, error: prevError } = await supabase
+    .from('transactions')
+    .select('amount, amount_usd, currency, type')
+    .in('type', ['income', 'expense'])
+    .lt('date', startDate.toISOString())
+
+  if (prevError) throw prevError
+
+  let openingBalance = 0
+  for (const tx of prevData || []) {
+    const { amountUsd } = getTxAmountUsd(tx, rates)
+    if (tx.type === 'income') openingBalance += amountUsd
+    else openingBalance -= amountUsd
+  }
+
+  // Transacciones dentro del periodo
   const { data, error } = await supabase
     .from('transactions')
     .select('amount, amount_usd, currency, type, date')
@@ -121,8 +140,6 @@ export async function getBalanceEvolution(days = 30) {
     .order('date', { ascending: true })
 
   if (error) throw error
-
-  const rates = await fetchCurrentRates()
 
   // Crear array de dias
   const dailyData = {}
@@ -151,9 +168,9 @@ export async function getBalanceEvolution(days = 30) {
     }
   }
 
-  // Calcular balance acumulado
+  // Calcular balance acumulado arrancando desde el balance previo al periodo
   const result = Object.values(dailyData)
-  let cumulative = 0
+  let cumulative = openingBalance
   for (const day of result) {
     cumulative += day.change
     day.balance = cumulative

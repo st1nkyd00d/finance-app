@@ -182,7 +182,7 @@ export default function Analytics() {
           </h2>
           <BalanceLineChart data={balanceEvolution} />
           <p className="mt-2 text-center text-gray-400 text-xs">
-            Cambio acumulado en el periodo
+            Balance real incluyendo historial anterior
           </p>
         </div>
 
