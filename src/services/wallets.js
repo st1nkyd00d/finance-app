@@ -78,6 +78,7 @@ export async function adjustBalance(walletId, walletCurrency, delta) {
     type,
     amount,
     amount_usd: amountUsd,
+    currency: walletCurrency,
     description: 'Ajuste de balance',
     date: new Date().toISOString(),
     category_id: null,
